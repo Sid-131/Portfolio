@@ -1,4 +1,3 @@
-import { GhostCursor } from './components/GhostCursor';
 import MosaicBackground from './components/MosaicBackground';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -21,22 +20,6 @@ function App() {
     <div className="relative min-h-screen bg-paper text-grid overflow-x-hidden">
       <MosaicBackground />
       <Navbar />
-
-      <GhostCursor
-        color="#1A3C2B"
-        brightness={0.4}
-        edgeIntensity={0}
-        trailLength={20}
-        inertia={0.4}
-        grainIntensity={0.02}
-        bloomStrength={0.2}
-        bloomRadius={0.4}
-        bloomThreshold={0.1}
-        fadeDelayMs={300}
-        fadeDurationMs={1200}
-        mixBlendMode="multiply"
-        zIndex={5}
-      />
 
       <main className="relative z-10">
         <Hero />
