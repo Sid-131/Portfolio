@@ -14,16 +14,16 @@ function App() {
 
       <GhostCursor
         color="#B19EEF"
-        brightness={1.2}
+        brightness={0.6}
         edgeIntensity={0}
         trailLength={20}
         inertia={0.4}
-        grainIntensity={0.05}
-        bloomStrength={0.5}
-        bloomRadius={0.7}
-        bloomThreshold={0}
-        fadeDelayMs={200}
-        fadeDurationMs={1000}
+        grainIntensity={0.03}
+        bloomStrength={0.3}
+        bloomRadius={0.5}
+        bloomThreshold={0.1}
+        fadeDelayMs={300}
+        fadeDurationMs={1200}
         zIndex={10}
       />
 
