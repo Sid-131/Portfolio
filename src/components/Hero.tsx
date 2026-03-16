@@ -36,10 +36,22 @@ export default function Hero() {
         </p>
       </blockquote>
 
-      {/* CTAs — 3 buttons */}
+      {/* CTAs — 4 buttons */}
       <div className="flex flex-wrap items-center justify-center gap-3">
         <a href="#projects" className="pill-btn">
           View Work
+        </a>
+        <a
+          href="#game"
+          className="flex items-center gap-2 font-body text-sm font-medium text-deep/70 transition-colors hover:text-deep"
+          style={{
+            borderRadius: '100px',
+            background: 'rgba(107,175,126,0.18)',
+            border: '1.5px solid rgba(107,175,126,0.4)',
+            padding: '10px 22px',
+          }}
+        >
+          🐍 Let's Play
         </a>
         <a
           href="/resume.pdf"
