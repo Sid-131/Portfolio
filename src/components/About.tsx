@@ -33,43 +33,8 @@ export default function About() {
           </div>
         </div>
 
-        {/* PM Profile Rating + Network Graph */}
-        <div className="glass-card p-8">
-          <div
-            className="mb-8 p-5"
-            style={{ background: 'rgba(255,255,255,0.4)', borderRadius: '12px' }}
-          >
-            <div className="mb-6 flex items-baseline justify-between">
-              <span className="section-label">PM Profile Rating</span>
-              <span className="font-display text-3xl font-bold italic text-deep">
-                74<span className="text-sm text-deep/40">/100</span>
-              </span>
-            </div>
-            <div className="space-y-3">
-              {about.ratings.map((r) => (
-                <div key={r.label}>
-                  <div className="mb-1 flex justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-deep/50">{r.label}</span>
-                    <span className="font-mono text-[10px] text-deep/60">{r.score}/{r.max}</span>
-                  </div>
-                  <div
-                    className="overflow-hidden"
-                    style={{ height: 6, background: 'rgba(43,64,53,0.08)', borderRadius: '100px' }}
-                  >
-                    <div
-                      className="h-full transition-all duration-700"
-                      style={{
-                        width: `${(r.score / r.max) * 100}%`,
-                        background: '#B8DCF0',
-                        borderRadius: '100px',
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        {/* Network Graph */}
+        <div className="glass-card p-8 flex items-center justify-center">
           <NetworkGraph />
         </div>
       </div>
