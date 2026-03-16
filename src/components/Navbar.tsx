@@ -14,41 +14,49 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-        scrolled ? 'bg-paper/90 backdrop-blur-sm' : 'bg-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? 'backdrop-blur-md' : ''
       }`}
-      style={{ borderBottom: '1px solid rgba(58, 58, 56, 0.2)' }}
+      style={{
+        background: scrolled ? 'rgba(255,255,255,0.6)' : 'transparent',
+        borderBottom: scrolled ? '1px solid rgba(184,220,240,0.5)' : 'none',
+      }}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-        {/* Logo box */}
-        <a href="#hero" className="flex h-8 w-8 items-center justify-center bg-primary" style={{ borderRadius: '2px' }}>
-          <span className="font-mono text-[10px] font-semibold tracking-widest text-white">SS</span>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        {/* Logo — italic serif pill */}
+        <a
+          href="#hero"
+          className="font-display italic font-bold text-deep"
+          style={{
+            fontSize: 16,
+            background: 'rgba(43,64,53,0.07)',
+            borderRadius: '100px',
+            padding: '6px 16px',
+          }}
+        >
+          ss.
         </a>
 
-        {/* Desktop nav — numbered, monospaced */}
+        {/* Desktop nav */}
         <div className="hidden items-center gap-8 md:flex">
-          {navItems.map((item, i) => (
+          {navItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="font-mono text-[10px] uppercase tracking-[0.1em] text-grid/60 transition-colors hover:text-primary"
+              className="font-body text-sm text-deep/60 transition-colors hover:text-deep"
             >
-              {String(i + 1).padStart(2, '0')}. {item.label}
+              {item.label}
             </a>
           ))}
         </div>
 
-        {/* Right — ghost button + mobile toggle */}
+        {/* CTA + mobile toggle */}
         <div className="flex items-center gap-4">
-          <a
-            href="#contact"
-            className="hidden font-mono text-[10px] uppercase tracking-[0.1em] text-primary md:block"
-            style={{ border: '1px solid rgba(58, 58, 56, 0.2)', padding: '6px 16px', borderRadius: '2px' }}
-          >
-            Contact
+          <a href="#contact" className="pill-btn hidden md:inline-block">
+            Let's Talk
           </a>
           <button
-            className="text-grid/60 md:hidden"
+            className="text-deep/50 md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -59,18 +67,27 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="bg-paper/95 backdrop-blur-sm md:hidden" style={{ borderTop: '1px solid rgba(58, 58, 56, 0.2)' }}>
-          <div className="flex flex-col gap-0 px-6 py-4">
-            {navItems.map((item, i) => (
+        <div
+          className="backdrop-blur-md md:hidden"
+          style={{
+            background: 'rgba(255,255,255,0.8)',
+            borderTop: '1px solid rgba(184,220,240,0.4)',
+          }}
+        >
+          <div className="flex flex-col px-6 py-4">
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="px-4 py-3 font-mono text-[11px] uppercase tracking-[0.1em] text-grid/60 transition-colors hover:text-primary"
+                className="py-3 font-body text-sm text-deep/60 transition-colors hover:text-deep"
               >
-                {String(i + 1).padStart(2, '0')}. {item.label}
+                {item.label}
               </a>
             ))}
+            <a href="#contact" className="pill-btn mt-3 text-center">
+              Let's Talk
+            </a>
           </div>
         </div>
       )}

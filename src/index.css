@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1A3C2B;
-  --color-paper: #F7F7F5;
-  --color-grid: #3A3A38;
-  --color-coral: #FF8C69;
-  --color-mint: #9EFFBF;
-  --color-gold: #F4D35E;
-  --color-hairline: rgba(58, 58, 56, 0.2);
-  --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'General Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-sky: #B8DCF0;
+  --color-cream: #FAF9F6;
+  --color-meadow: #6BAF7E;
+  --color-deep: #2B4035;
+  --color-nokia: #3D8B37;
+  --color-glass: rgba(255, 255, 255, 0.55);
+  --color-hairline: rgba(43, 64, 53, 0.15);
+  --font-display: 'Playfair Display', ui-serif, Georgia, serif;
+  --font-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
 }
 
 html {
@@ -19,7 +19,7 @@ html {
 
 body {
   margin: 0;
-  font-family: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -29,25 +29,97 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F7F7F5;
+  background: #FAF9F6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(58, 58, 56, 0.25);
-  border-radius: 0px;
+  background: rgba(43, 64, 53, 0.2);
+  border-radius: 100px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(58, 58, 56, 0.4);
+  background: rgba(43, 64, 53, 0.35);
 }
 
 ::selection {
-  background: rgba(26, 60, 43, 0.15);
-  color: #1A3C2B;
+  background: rgba(184, 220, 240, 0.45);
+  color: #2B4035;
 }
 
-/* Orbit animation for network graph */
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Pill tag */
+.pill-tag {
+  display: inline-block;
+  background: rgba(184, 220, 240, 0.3);
+  color: #2B4035;
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+/* Pill button */
+.pill-btn {
+  display: inline-block;
+  border-radius: 100px;
+  padding: 10px 28px;
+  background: #B8DCF0;
+  color: #2B4035;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(184, 220, 240, 0.45);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+}
+.pill-btn:hover {
+  box-shadow: 0 6px 28px rgba(184, 220, 240, 0.7);
+  transform: translateY(-2px);
+}
+
+/* Section label */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(43, 64, 53, 0.45);
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Bubble float animations */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-18px) scale(1.04); }
+}
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+.bubble-float-slow   { animation: float-slow   8s  ease-in-out infinite; }
+.bubble-float-medium { animation: float-medium  5s  ease-in-out infinite; }
+.bubble-float-fast   { animation: float-fast  3.2s  ease-in-out infinite; }
+
+/* Orbit animation for NetworkGraph */
 @keyframes orbit {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }

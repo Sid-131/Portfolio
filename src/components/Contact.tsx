@@ -4,35 +4,32 @@ import { profile } from '../data/portfolio';
 export default function Contact() {
   return (
     <section id="contact" className="relative z-20 mx-auto max-w-[640px] px-6 py-24">
-      <div className="mb-2 text-center font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">
-        05 / Contact
+      <div className="text-center">
+        <span className="section-label">Contact</span>
+        <h2
+          className="mb-4 font-display italic font-bold text-deep"
+          style={{ fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.1 }}
+        >
+          Let's Connect
+        </h2>
+        <p className="mx-auto mb-10 font-body text-base leading-relaxed text-deep/55">
+          I'm actively looking for Associate PM / PM roles.<br />
+          Open to conversations about AI-native products, developer tooling, and B2B SaaS.
+        </p>
       </div>
-      <h2 className="mb-4 text-center font-heading text-4xl font-bold tracking-tight text-primary sm:text-5xl">
-        Let's Connect
-      </h2>
-      <p className="mx-auto mb-10 text-center font-body text-sm leading-relaxed text-grid/60">
-        I'm actively looking for Associate Product Manager / Product Manager roles.
-        Open to conversations about AI-native products, developer tooling, and B2B SaaS.
-      </p>
 
-      {/* Form CTA container with corner markers */}
-      <div className="relative p-8" style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}>
-        {/* L-shaped corner markers */}
-        <div className="absolute top-0 left-0 h-2.5 w-2.5 border-t border-l border-primary" />
-        <div className="absolute top-0 right-0 h-2.5 w-2.5 border-t border-r border-primary" />
-        <div className="absolute bottom-0 left-0 h-2.5 w-2.5 border-b border-l border-primary" />
-        <div className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-primary" />
-
+      {/* Glass container */}
+      <div className="glass-card p-8">
         <div className="grid gap-3 sm:grid-cols-2">
           <a
             href={`mailto:${profile.email}`}
-            className="flex items-center gap-3 p-4 transition-colors hover:bg-grid/[0.03]"
-            style={{ border: '1px solid rgba(58,58,56,0.15)', borderRadius: '2px' }}
+            className="flex items-center gap-3 p-4 transition-colors hover:bg-white/75"
+            style={{ background: 'rgba(255,255,255,0.4)', borderRadius: '12px' }}
           >
-            <Mail size={16} className="text-primary" />
+            <Mail size={16} className="text-deep/60" />
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-grid/40">Email</div>
-              <span className="font-mono text-[11px] text-grid/70">{profile.email}</span>
+              <span className="section-label" style={{ marginBottom: 2 }}>Email</span>
+              <p className="font-body text-sm text-deep/65">{profile.email}</p>
             </div>
           </a>
 
@@ -40,13 +37,13 @@ export default function Contact() {
             href={profile.linkedin}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-4 transition-colors hover:bg-grid/[0.03]"
-            style={{ border: '1px solid rgba(58,58,56,0.15)', borderRadius: '2px' }}
+            className="flex items-center gap-3 p-4 transition-colors hover:bg-white/75"
+            style={{ background: 'rgba(255,255,255,0.4)', borderRadius: '12px' }}
           >
-            <Linkedin size={16} className="text-primary" />
+            <Linkedin size={16} className="text-deep/60" />
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-grid/40">LinkedIn</div>
-              <span className="font-mono text-[11px] text-grid/70">Profile</span>
+              <span className="section-label" style={{ marginBottom: 2 }}>LinkedIn</span>
+              <p className="font-body text-sm text-deep/65">Profile</p>
             </div>
           </a>
 
@@ -54,32 +51,35 @@ export default function Contact() {
             href={profile.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-4 transition-colors hover:bg-grid/[0.03]"
-            style={{ border: '1px solid rgba(58,58,56,0.15)', borderRadius: '2px' }}
+            className="flex items-center gap-3 p-4 transition-colors hover:bg-white/75"
+            style={{ background: 'rgba(255,255,255,0.4)', borderRadius: '12px' }}
           >
-            <Github size={16} className="text-primary" />
+            <Github size={16} className="text-deep/60" />
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-grid/40">GitHub</div>
-              <span className="font-mono text-[11px] text-grid/70">Sid-131</span>
+              <span className="section-label" style={{ marginBottom: 2 }}>GitHub</span>
+              <p className="font-body text-sm text-deep/65">Sid-131</p>
             </div>
           </a>
 
           <div
             className="flex items-center gap-3 p-4"
-            style={{ border: '1px solid rgba(58,58,56,0.15)', borderRadius: '2px' }}
+            style={{ background: 'rgba(255,255,255,0.4)', borderRadius: '12px' }}
           >
-            <MapPin size={16} className="text-primary" />
+            <MapPin size={16} className="text-deep/60" />
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-grid/40">Location</div>
-              <span className="font-mono text-[11px] text-grid/70">{profile.location}</span>
+              <span className="section-label" style={{ marginBottom: 2 }}>Location</span>
+              <p className="font-body text-sm text-deep/65">{profile.location}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <footer className="mt-20 pt-6 text-center" style={{ borderTop: '1px solid rgba(58,58,56,0.15)' }}>
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-grid/40">
-          &copy; {new Date().getFullYear()} {profile.name} — Built with React + Three.js
+      <footer
+        className="mt-16 pt-6 text-center"
+        style={{ borderTop: '1px solid rgba(43,64,53,0.1)' }}
+      >
+        <p className="font-mono text-[10px] uppercase tracking-widest text-deep/35">
+          &copy; {new Date().getFullYear()} {profile.name} — Built with React + Vite
         </p>
       </footer>
     </section>
