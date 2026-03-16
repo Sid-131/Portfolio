@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 
 const GRID = 20;
 const CELL = 20;
-const SIZE = GRID * CELL; // 400px
+const SIZE = GRID * CELL;
 
 type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 type Pt = { x: number; y: number };
@@ -22,7 +22,6 @@ export default function SnakeGame() {
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
 
-  // All mutable game state in refs — avoids stale closures
   const snakeRef = useRef<Pt[]>([]);
   const dirRef = useRef<Dir>('RIGHT');
   const nextDirRef = useRef<Dir>('RIGHT');
@@ -35,32 +34,32 @@ export default function SnakeGame() {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
 
-    // Background
-    ctx.fillStyle = '#F7F7F5';
+    // Sky-tinted canvas background
+    ctx.fillStyle = '#EBF4FA';
     ctx.fillRect(0, 0, SIZE, SIZE);
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(58,58,56,0.07)';
+    ctx.strokeStyle = 'rgba(43,64,53,0.06)';
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= GRID; i++) {
       ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, SIZE); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(SIZE, i * CELL); ctx.stroke();
     }
 
-    // Food — coral square
+    // Food — nokia green circle
     const f = foodRef.current;
-    ctx.fillStyle = '#FF8C69';
-    ctx.fillRect(f.x * CELL + 3, f.y * CELL + 3, CELL - 6, CELL - 6);
+    ctx.fillStyle = '#3D8B37';
+    ctx.beginPath();
+    ctx.arc(f.x * CELL + CELL / 2, f.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Snake
+    // Snake — deep green with fade
     snakeRef.current.forEach((seg, i) => {
-      if (i === 0) {
-        ctx.fillStyle = '#1A3C2B';
-      } else {
-        const alpha = Math.max(0.3, 1 - i * 0.025);
-        ctx.fillStyle = `rgba(26,60,43,${alpha})`;
-      }
-      ctx.fillRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2);
+      const alpha = i === 0 ? 1 : Math.max(0.3, 1 - i * 0.025);
+      ctx.fillStyle = i === 0 ? '#2B4035' : `rgba(43,64,53,${alpha})`;
+      ctx.beginPath();
+      ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
+      ctx.fill();
     });
   }, []);
 
@@ -78,14 +77,9 @@ export default function SnakeGame() {
       x: head.x + (dirRef.current === 'RIGHT' ? 1 : dirRef.current === 'LEFT' ? -1 : 0),
       y: head.y + (dirRef.current === 'DOWN' ? 1 : dirRef.current === 'UP' ? -1 : 0),
     };
-
-    // Wall collision
     if (nh.x < 0 || nh.x >= GRID || nh.y < 0 || nh.y >= GRID) { endGame(); return; }
-    // Self collision
     if (snakeRef.current.some(s => s.x === nh.x && s.y === nh.y)) { endGame(); return; }
-
     const newSnake = [nh, ...snakeRef.current];
-
     if (nh.x === foodRef.current.x && nh.y === foodRef.current.y) {
       scoreRef.current += 10;
       setScore(scoreRef.current);
@@ -93,7 +87,6 @@ export default function SnakeGame() {
     } else {
       newSnake.pop();
     }
-
     snakeRef.current = newSnake;
     draw();
   }, [draw, endGame]);
@@ -112,7 +105,6 @@ export default function SnakeGame() {
     timerRef.current = setInterval(tick, 120);
   }, [draw, tick]);
 
-  // Keyboard controls
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
@@ -127,13 +119,11 @@ export default function SnakeGame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [startGame]);
 
-  // Initial draw + cleanup
   useEffect(() => {
     draw();
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [draw]);
 
-  // Mobile D-pad handler
   const handleDpad = (d: Dir) => {
     const cur = dirRef.current;
     if (d === 'UP' && cur !== 'DOWN') nextDirRef.current = 'UP';
@@ -143,104 +133,85 @@ export default function SnakeGame() {
   };
 
   const btnStyle = {
-    border: '1px solid rgba(58,58,56,0.2)',
-    borderRadius: '2px',
-    background: '#F7F7F5',
+    border: '1px solid rgba(43,64,53,0.15)',
+    borderRadius: '10px',
+    background: 'rgba(255,255,255,0.65)',
+    backdropFilter: 'blur(8px)',
     width: 40,
     height: 40,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    fontFamily: "'JetBrains Mono', monospace",
+    fontFamily: "'DM Mono', monospace",
     fontSize: 14,
-    color: '#1A3C2B',
+    color: '#2B4035',
     userSelect: 'none' as const,
   };
 
   return (
     <section id="game" className="relative z-20 mx-auto max-w-6xl px-6 py-24">
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">
-        // Interactive
-      </div>
-      <h2 className="mb-12 font-heading text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+      <span className="section-label">Interactive</span>
+      <h2
+        className="mb-12 font-display italic font-bold text-deep"
+        style={{ fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.1 }}
+      >
         While You're Here
       </h2>
 
       <div className="flex flex-col items-center gap-6">
-        {/* Game container */}
-        <div
-          className="relative bg-paper p-6"
-          style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}
-        >
-          {/* Corner markers */}
-          <div className="absolute top-0 left-0 h-2.5 w-2.5 border-t border-l border-primary" />
-          <div className="absolute top-0 right-0 h-2.5 w-2.5 border-t border-r border-primary" />
-          <div className="absolute bottom-0 left-0 h-2.5 w-2.5 border-b border-l border-primary" />
-          <div className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-primary" />
-
+        <div className="glass-card relative p-6">
           {/* HUD */}
           <div className="mb-3 flex items-center justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-grid/40">
-              Nokia Snake v1.0
-            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-deep/40">Nokia Snake v1.0</span>
             <div className="flex gap-4">
-              {best > 0 && (
-                <span className="font-mono text-[10px] text-grid/40">
-                  Best: {best}
-                </span>
-              )}
-              <span className="font-mono text-[10px] text-primary">
-                Score: {score}
-              </span>
+              {best > 0 && <span className="font-mono text-[10px] text-deep/40">Best: {best}</span>}
+              <span className="font-mono text-[10px] text-deep"># {score}</span>
             </div>
           </div>
 
           {/* Canvas */}
-          <div className="relative" style={{ border: '1px solid rgba(58,58,56,0.15)' }}>
+          <div
+            className="relative overflow-hidden"
+            style={{ borderRadius: '8px', border: '1px solid rgba(43,64,53,0.12)' }}
+          >
             <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
 
             {/* Idle overlay */}
             {status === 'idle' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-paper/92">
-                <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/40">
-                  Classic Nokia Snake
-                </p>
-                <button
-                  onClick={startGame}
-                  className="bg-primary px-8 py-3 font-mono text-[11px] uppercase tracking-[0.1em] text-white transition-opacity hover:opacity-80"
-                  style={{ borderRadius: '2px' }}
-                >
-                  Start Game
-                </button>
-                <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.1em] text-grid/30">
-                  Arrow keys or D-pad below · Enter to start
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm"
+                style={{ background: 'rgba(255,255,255,0.82)' }}
+              >
+                <p className="mb-4 font-mono text-[10px] uppercase tracking-wider text-deep/40">Classic Nokia Snake</p>
+                <button onClick={startGame} className="pill-btn">Start Game</button>
+                <p className="mt-4 font-mono text-[9px] uppercase tracking-wider text-deep/30">
+                  Arrow keys or D-pad · Enter to start
                 </p>
               </div>
             )}
 
             {/* Game over overlay */}
             {status === 'over' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-paper/95">
-                <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.1em] text-coral">
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm"
+                style={{ background: 'rgba(255,255,255,0.88)' }}
+              >
+                <p className="mb-1 font-mono text-[11px] uppercase tracking-wider" style={{ color: '#3D8B37' }}>
                   Game Over
                 </p>
-                <p className="mb-1 font-heading text-5xl font-bold text-primary">{score}</p>
-                <p className="mb-8 font-mono text-[9px] uppercase tracking-[0.1em] text-grid/40">
-                  points scored
-                </p>
+                <p className="mb-1 font-display italic text-5xl font-bold text-deep">{score}</p>
+                <p className="mb-8 font-mono text-[9px] uppercase tracking-wider text-deep/40">points scored</p>
                 <div className="flex flex-col items-center gap-3">
-                  <a
-                    href="#about"
-                    className="bg-primary px-8 py-3 font-mono text-[11px] uppercase tracking-[0.1em] text-white transition-opacity hover:opacity-80"
-                    style={{ borderRadius: '2px' }}
-                  >
-                    Check My Profile ↓
-                  </a>
+                  <a href="#about" className="pill-btn">Check My Profile ↓</a>
                   <button
                     onClick={startGame}
-                    className="px-8 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50 transition-colors hover:text-primary"
-                    style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}
+                    className="font-body text-sm text-deep/45 transition-colors hover:text-deep"
+                    style={{
+                      borderRadius: '100px',
+                      border: '1.5px solid rgba(43,64,53,0.2)',
+                      padding: '8px 24px',
+                    }}
                   >
                     Try Again
                   </button>
@@ -249,7 +220,7 @@ export default function SnakeGame() {
             )}
           </div>
 
-          {/* D-pad for mobile */}
+          {/* D-pad */}
           <div className="mt-5 flex flex-col items-center gap-1">
             <div className="flex justify-center">
               <button style={btnStyle} onPointerDown={() => handleDpad('UP')} aria-label="Up">▲</button>
@@ -264,7 +235,7 @@ export default function SnakeGame() {
             </div>
           </div>
 
-          <p className="mt-3 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-grid/30">
+          <p className="mt-3 text-center font-mono text-[9px] uppercase tracking-wider text-deep/30">
             Eat food to grow · Avoid walls & yourself
           </p>
         </div>

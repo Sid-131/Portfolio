@@ -1,32 +1,30 @@
 import { skills } from '../data/portfolio';
 
-const categoryAccents = ['bg-coral', 'bg-primary', 'bg-mint', 'bg-gold', 'bg-coral'];
-
 export default function Skills() {
   return (
     <section id="skills" className="relative z-20 mx-auto max-w-6xl px-6 py-24">
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">
-        04 / Skills
-      </div>
-      <h2 className="mb-12 font-heading text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+      <span className="section-label">Skills</span>
+      <h2
+        className="mb-12 font-display italic font-bold text-deep"
+        style={{ fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.1 }}
+      >
         What I Work With
       </h2>
 
-      <div className="grid gap-px sm:grid-cols-2 lg:grid-cols-3" style={{ backgroundColor: 'rgba(58,58,56,0.2)' }}>
-        {Object.entries(skills).map(([category, items], idx) => (
-          <div key={category} className="bg-paper p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <span className={`block h-2 w-2 ${categoryAccents[idx]}`} />
-              <h4 className="font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">
-                {category}
-              </h4>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {Object.entries(skills).map(([category, items]) => (
+          <div key={category} className="glass-card p-6">
+            <div
+              className="mb-4 pb-3"
+              style={{ borderBottom: '2px solid rgba(184,220,240,0.5)' }}
+            >
+              <span className="section-label">{category}</span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {items.map((skill) => (
                 <span
                   key={skill}
-                  className="font-mono text-[11px] text-grid/70 transition-colors hover:text-primary"
-                  style={{ border: '1px solid rgba(58,58,56,0.2)', padding: '4px 10px', borderRadius: '2px' }}
+                  className="pill-tag cursor-default transition-colors hover:bg-sky/50"
                 >
                   {skill}
                 </span>

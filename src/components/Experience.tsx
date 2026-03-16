@@ -1,83 +1,70 @@
 import { experience } from '../data/portfolio';
 
-function CornerMarkers({ children }: { children: React.ReactNode }) {
-  const corner = 'absolute w-2.5 h-2.5 border-primary';
-  return (
-    <div className="relative p-6">
-      <div className={`${corner} top-0 left-0 border-t border-l`} />
-      <div className={`${corner} top-0 right-0 border-t border-r`} />
-      <div className={`${corner} bottom-0 left-0 border-b border-l`} />
-      <div className={`${corner} bottom-0 right-0 border-b border-r`} />
-      {children}
-    </div>
-  );
-}
-
 export default function Experience() {
   return (
     <section id="experience" className="relative z-20 mx-auto max-w-6xl px-6 py-24">
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">
-        02 / Experience
-      </div>
-      <h2 className="mb-12 font-heading text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+      <span className="section-label">Experience</span>
+      <h2
+        className="mb-12 font-display italic font-bold text-deep"
+        style={{ fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.1 }}
+      >
         Where I've Worked
       </h2>
 
       <div className="space-y-6">
-        {/* Dell Technologies card */}
-        <div style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}>
-          <div className="p-6 sm:p-8">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h3 className="font-heading text-xl font-bold text-primary">{experience.role}</h3>
-                <p className="mt-1 font-body text-sm text-grid/70">{experience.company}</p>
-                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/40">{experience.promotion}</p>
-              </div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50 sm:text-right">
-                <p>{experience.period}</p>
-                <p>{experience.location}</p>
-              </div>
+        {/* Main role card */}
+        <div className="glass-card p-6 sm:p-8">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="font-display italic text-xl font-bold text-deep">{experience.role}</h3>
+              <p className="mt-1 font-body text-sm text-deep/65">{experience.company}</p>
+              <span className="section-label mt-1">{experience.promotion}</span>
             </div>
-
-            <ul className="space-y-3">
-              {experience.bullets.map((bullet, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="mt-2 h-1 w-1 shrink-0 bg-primary" />
-                  <span className="font-body text-sm leading-relaxed text-grid/70">{bullet}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="sm:text-right">
+              <span className="section-label">{experience.period}</span>
+              <span className="section-label">{experience.location}</span>
+            </div>
           </div>
+
+          <ul className="space-y-3">
+            {experience.bullets.map((bullet, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span
+                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ background: '#6BAF7E' }}
+                />
+                <span className="font-body text-sm leading-relaxed text-deep/65">{bullet}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Awards */}
-        <div style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}>
-          <div className="p-6 sm:p-8">
-            <h4 className="mb-4 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">Awards & Recognition</h4>
-            <div className="grid gap-px sm:grid-cols-2 lg:grid-cols-3" style={{ backgroundColor: 'rgba(58,58,56,0.15)' }}>
-              {experience.awards.map((award) => (
-                <div key={award.title} className="bg-paper p-4">
-                  <p className="font-heading text-sm font-semibold text-primary">{award.title}</p>
-                  <p className="mt-1 font-mono text-[10px] text-grid/50">{award.description}</p>
-                </div>
-              ))}
-            </div>
+        <div className="glass-card p-6 sm:p-8">
+          <span className="section-label">Awards & Recognition</span>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {experience.awards.map((award) => (
+              <div
+                key={award.title}
+                className="p-4"
+                style={{ background: 'rgba(255,255,255,0.7)', borderRadius: '12px' }}
+              >
+                <p className="font-body text-sm font-semibold text-deep">{award.title}</p>
+                <p className="mt-1 font-mono text-[10px] text-deep/50">{award.description}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Education & Fellowship with corner markers */}
-        <div className="grid gap-px sm:grid-cols-2" style={{ backgroundColor: 'rgba(58,58,56,0.2)' }}>
-          <div className="bg-paper" style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}>
-            <CornerMarkers>
-              <h4 className="mb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">Education</h4>
-              <p className="font-body text-sm text-grid/70">{experience.education}</p>
-            </CornerMarkers>
+        {/* Education & Fellowship */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="glass-card p-6">
+            <span className="section-label">Education</span>
+            <p className="font-body text-sm text-deep/65">{experience.education}</p>
           </div>
-          <div className="bg-paper" style={{ border: '1px solid rgba(58,58,56,0.2)', borderRadius: '2px' }}>
-            <CornerMarkers>
-              <h4 className="mb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-grid/50">PM Fellowship</h4>
-              <p className="font-body text-sm text-grid/70">{experience.fellowship}</p>
-            </CornerMarkers>
+          <div className="glass-card p-6">
+            <span className="section-label">PM Fellowship</span>
+            <p className="font-body text-sm text-deep/65">{experience.fellowship}</p>
           </div>
         </div>
       </div>
