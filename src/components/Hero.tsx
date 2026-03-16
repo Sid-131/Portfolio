@@ -1,4 +1,4 @@
-import { ArrowDown, Github, Linkedin, Mail } from 'lucide-react';
+import { ArrowDown, Github, Linkedin, Mail, Download } from 'lucide-react';
 import { profile } from '../data/portfolio';
 
 export default function Hero() {
@@ -8,19 +8,24 @@ export default function Hero() {
       className="relative z-20 flex min-h-screen flex-col items-center justify-center px-6 pt-20"
     >
       {/* Status pill */}
-      <span className="pill-tag mb-8">Open to PM roles</span>
+      <span className="pill-tag mb-8">Open to APM / PM roles</span>
 
       {/* Large serif italic name */}
       <h1
-        className="mb-6 text-center font-display font-bold italic text-deep"
+        className="mb-4 text-center font-display font-bold italic text-deep"
         style={{ fontSize: 'clamp(56px, 10vw, 120px)', lineHeight: 0.88, letterSpacing: '-0.02em' }}
       >
         <span className="block">Siddhant</span>
         <span className="block">Singh.</span>
       </h1>
 
-      {/* Tagline */}
-      <p className="mx-auto mb-8 max-w-md text-center font-body text-base leading-relaxed text-deep/55 sm:text-lg">
+      {/* Role line — strong, direct */}
+      <p className="mb-6 text-center font-body font-medium text-deep/70 sm:text-lg">
+        Technical Support Engineer at Dell &rarr; Product Manager
+      </p>
+
+      {/* Tagline — stronger, resume-accurate */}
+      <p className="mx-auto mb-8 max-w-lg text-center font-body text-sm leading-relaxed text-deep/50 sm:text-base">
         {profile.shortTagline}
       </p>
 
@@ -31,18 +36,31 @@ export default function Hero() {
         </p>
       </blockquote>
 
-      {/* CTAs */}
-      <div className="flex flex-wrap items-center justify-center gap-4">
+      {/* CTAs — 3 buttons */}
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <a href="#projects" className="pill-btn">
           View Work
         </a>
         <a
-          href="#contact"
-          className="font-body text-sm text-deep/65 transition-colors hover:text-deep"
+          href="/resume.pdf"
+          download="Siddhant_Singh_Resume.pdf"
+          className="flex items-center gap-2 font-body text-sm text-deep/65 transition-colors hover:text-deep"
           style={{
             borderRadius: '100px',
             border: '1.5px solid rgba(43,64,53,0.22)',
-            padding: '10px 28px',
+            padding: '10px 22px',
+          }}
+        >
+          <Download size={14} />
+          Resume
+        </a>
+        <a
+          href="#contact"
+          className="font-body text-sm text-deep/50 transition-colors hover:text-deep"
+          style={{
+            borderRadius: '100px',
+            border: '1.5px solid rgba(43,64,53,0.12)',
+            padding: '10px 22px',
           }}
         >
           Get in Touch

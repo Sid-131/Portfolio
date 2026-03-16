@@ -1,7 +1,7 @@
 export const profile = {
   name: "Siddhant Singh",
   tagline: "Product-minded engineer with 3.5 years of enterprise-scale experience at Dell Technologies, a deployed RAG chatbot, a published PM research project, and a deep belief that if you can't clearly diagnose a problem — you can't scale the solution.",
-  shortTagline: "Aspiring Product Manager | PM Fellow @ NextLeap | 3+ Years Enterprise Tech @ Dell",
+  shortTagline: "Technical Support Engineer at Dell transitioning into Product Management. 3+ years building AI tools, automation systems, and internal products at enterprise scale. NextLeap PM Fellow — targeting APM / PM roles in AI-native products, developer tooling, and B2B SaaS.",
   email: "siddhant.singh131@outlook.com",
   phone: "+91 79052 49718",
   linkedin: "https://linkedin.com/in/siddhant-singh-3b58681a7",
