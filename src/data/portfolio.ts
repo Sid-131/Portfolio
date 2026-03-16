@@ -134,6 +134,7 @@ export const skills = {
 };
 
 export const navItems = [
+  { label: "Game", href: "#game" },
   { label: "About", href: "#about" },
   { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },

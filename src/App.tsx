@@ -1,6 +1,7 @@
 import MosaicBackground from './components/MosaicBackground';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import SnakeGame from './components/SnakeGame';
 import About from './components/About';
 import Experience from './components/Experience';
 import Projects from './components/Projects';
@@ -23,6 +24,8 @@ function App() {
 
       <main className="relative z-10">
         <Hero />
+        <Divider />
+        <SnakeGame />
         <Divider />
         <About />
         <Divider />
