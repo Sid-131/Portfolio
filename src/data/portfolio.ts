@@ -56,6 +56,7 @@ export const experience = {
     { title: "Applause Award", description: "2x recipient" },
     { title: "Promoted to TSE-II", description: "Recognized for consistent impact" },
     { title: "ISM V5 Certified", description: "Professional certification" },
+    { title: "Shri Baljit Shastri Award", description: "Academic excellence award" },
   ],
   education: "B.Tech Civil Engineering, Amity University Lucknow (2017–2021)",
   fellowship: "NextLeap Product Management Fellowship (Jan 2026 – Present)",
@@ -133,11 +134,42 @@ export const skills = {
   ],
 };
 
+export const openSource = [
+  {
+    name: "RAG_chat_bot",
+    description: "Production RAG chatbot for mutual fund FAQs — async scraping, semantic chunking, ChromaDB, Gemini 2.5 Flash, dual-layer guardrails blocking advisory questions.",
+    tags: ["Python", "ChromaDB", "FastAPI", "Streamlit", "Gemini"],
+    stars: null,
+    href: "https://github.com/Sid-131/RAG_chat_bot",
+    live: "https://rag-chat-bot-rouge.vercel.app",
+    highlight: "Deployed to Vercel · 13-phase RAG pipeline",
+  },
+  {
+    name: "SyncIQ Healthcheck Script",
+    description: "7-section automated pre-failover diagnostic tool for Dell PowerScale clusters. Reduced engineer checklist time and eliminated manual blind spots in production.",
+    tags: ["Python", "Bash", "OneFS CLI", "Dell Internal"],
+    stars: null,
+    href: null,
+    live: null,
+    highlight: "Internal tool · Fixed 10 production bugs post-v1",
+  },
+  {
+    name: "SSL Certificate Automation",
+    description: "Automated SSL cert renewal workflow for enterprise support environments — saved 15–30 minutes per incident, est. 200+ engineer-hours/year across the team.",
+    tags: ["Python", "Bash", "Linux"],
+    stars: null,
+    href: null,
+    live: null,
+    highlight: "200+ engineer-hours saved/year",
+  },
+];
+
 export const navItems = [
   { label: "Game", href: "#game" },
   { label: "About", href: "#about" },
   { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
+  { label: "Open Source", href: "#opensource" },
   { label: "Skills", href: "#skills" },
   { label: "Contact", href: "#contact" },
 ];
