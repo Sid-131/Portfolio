@@ -1,5 +1,6 @@
 import { ArrowDown, Github, Linkedin, Mail, Download } from 'lucide-react';
 import { profile } from '../data/portfolio';
+import HeroOrb from './HeroOrb';
 
 export default function Hero() {
   return (
@@ -7,6 +8,7 @@ export default function Hero() {
       id="hero"
       className="relative z-20 flex min-h-screen flex-col items-center justify-center px-6 pt-20"
     >
+      <HeroOrb />
       {/* Status pill */}
       <span className="pill-tag mb-8">PM · Builder · Available</span>
 
