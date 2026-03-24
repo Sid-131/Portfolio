@@ -1,4 +1,4 @@
-import { Mail, Linkedin, Github, MapPin } from 'lucide-react';
+import { Mail, Linkedin, Github, MapPin, Film } from 'lucide-react';
 import { profile } from '../data/portfolio';
 
 export default function Contact() {
@@ -73,6 +73,33 @@ export default function Contact() {
           </div>
         </div>
       </div>
+
+      {/* Jellyfin Easter Egg */}
+      <a
+        href="https://media.sidmatrix.xyz/web/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 flex items-center gap-4 p-5 transition-colors hover:bg-white/60"
+        style={{ background: 'rgba(255,255,255,0.35)', borderRadius: '16px', border: '1px solid rgba(184,220,240,0.4)' }}
+      >
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          style={{ background: 'rgba(184,220,240,0.3)' }}
+        >
+          <Film size={18} className="text-deep/70" />
+        </div>
+        <div className="flex-1">
+          <p className="font-display italic font-bold text-base text-deep">Wanna watch a movie? 🎬</p>
+          <p className="font-body text-sm text-deep/50">I run a self-hosted Jellyfin server. Email me for access.</p>
+        </div>
+        <a
+          href={`mailto:${profile.email}?subject=Jellyfin Access Request`}
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 font-body text-xs text-deep/50 underline decoration-dotted hover:text-deep transition-colors"
+        >
+          Request access
+        </a>
+      </a>
 
       <footer
         className="mt-16 pt-6 text-center"
