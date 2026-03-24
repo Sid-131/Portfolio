@@ -8,7 +8,7 @@ export default function Hero() {
       className="relative z-20 flex min-h-screen flex-col items-center justify-center px-6 pt-20"
     >
       {/* Status pill */}
-      <span className="pill-tag mb-8">Open to APM / PM roles</span>
+      <span className="pill-tag mb-8">PM · Builder · Available</span>
 
       {/* Large serif italic name */}
       <h1
@@ -21,7 +21,7 @@ export default function Hero() {
 
       {/* Role line — strong, direct */}
       <p className="mb-6 text-center font-body font-medium text-deep/70 sm:text-lg">
-        Technical Support Engineer at Dell &rarr; Product Manager
+        I build products. I understand customers. I write code.
       </p>
 
       {/* Tagline — stronger, resume-accurate */}

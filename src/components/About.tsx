@@ -9,7 +9,7 @@ export default function About() {
         className="mb-12 font-display italic font-bold text-deep"
         style={{ fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.1 }}
       >
-        From Support Engineer<br />to Product Manager
+        The PM who was<br />already building.
       </h2>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -24,7 +24,7 @@ export default function About() {
           </div>
 
           <div className="mt-8">
-            <span className="section-label">What Sets Me Apart</span>
+            <span className="section-label">The Proof</span>
             <div className="mt-3 flex flex-wrap gap-2">
               {about.strengths.map((s, i) => (
                 <span key={i} className="pill-tag">{s}</span>
