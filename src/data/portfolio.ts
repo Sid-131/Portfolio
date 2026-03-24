@@ -1,7 +1,7 @@
 export const profile = {
   name: "Siddhant Singh",
-  tagline: "Product-minded engineer with 3.5 years of enterprise-scale experience at Dell Technologies, a deployed RAG chatbot, a published PM research project, and a deep belief that if you can't clearly diagnose a problem — you can't scale the solution.",
-  shortTagline: "Technical Support Engineer at Dell transitioning into Product Management. 3+ years building AI tools, automation systems, and internal products at enterprise scale. NextLeap PM Fellow — targeting APM / PM roles in AI-native products, developer tooling, and B2B SaaS.",
+  tagline: "3.5 years at the edge of product failure. 1,000+ enterprise incidents. 4 shipped products. Primary user research. Published teardowns. Most PMs have one of these. I have all of them.",
+  shortTagline: "I've spent 3.5 years watching what breaks when product decisions fail — from the customer's side, under pressure. I then built the tools that didn't exist. I don't talk about shipping. I ship.",
   email: "siddhant.singh131@outlook.com",
   phone: "+91 79052 49718",
   linkedin: "https://linkedin.com/in/siddhant-singh-3b58681a7",
@@ -9,21 +9,21 @@ export const profile = {
   location: "Lucknow / Bengaluru, India",
   targetRole: "Associate Product Manager / Product Manager",
   interviewQuote:
-    "Support tickets are an unstructured eval dataset. Escalations are failed product expectations. I spent 3.5 years building intuition for what product failure looks like at scale — now I want to get upstream and prevent it.",
+    "I didn't study product management. I watched it fail — 1,000 times, in production, with a customer on the phone. Then I built the things that should have existed. That's the job.",
 };
 
 export const about = {
   story: [
-    "I spent 3.5 years at Dell Technologies solving 1,000+ enterprise production incidents — S1/S2 escalations where systems were down and customers needed answers fast. That experience taught me something most PMs never learn firsthand: what product failure looks like at scale.",
-    "Now I'm channeling that into product management. As a PM Fellow at NextLeap, I've shipped user research, written PRDs, built KPI frameworks, and deployed a production RAG chatbot. I bring the rare combination of deep technical depth, real customer empathy, and systematic product thinking.",
+    "Most PMs learn about customers from research studies. I learned from 1,000+ enterprise production incidents — S1/S2 escalations where systems were down, millions were at risk, and the customer on the phone needed an answer in the next 10 minutes. That's not support. That's product failure playing out in real time, with a human on the other end.",
+    "The rest I built. A production RAG chatbot with dual-layer guardrails. A portable Windows display manager shipped as a v1.0 EXE. A 19-container homelab monitored by 1,000 lines of custom Python. Three years of internal tools at Dell that people actually used. I've also done the PM work — user research, PRDs, teardowns, KPI frameworks. I don't pitch decks about things I'd ship someday. I ship.",
   ],
   strengths: [
-    "Working RAG system with guardrails and evaluation framework",
-    "3+ years of enterprise customer empathy at scale",
-    "Primary user research experience (45 surveys + 6 interviews)",
-    "Systematic product thinking — KPI trees, non-goals, phase-based architecture",
-    "India-specific market insight — voice UX, WhatsApp CX, D2C brands",
-    "Built internal tools that got used at Dell — real shipping experience",
+    "1,000+ S1/S2 incidents — customer empathy from the frontline, not the classroom",
+    "4 shipped products — RAG chatbot, Lumynex, homelab, Dell internal tools",
+    "Primary research: 45 surveys + 6 interviews — I know how to find the signal",
+    "PRDs, KPI trees, product teardowns — PM thinking, fully formalized",
+    "Python, FastAPI, Docker, RAG — I build what I design",
+    "19-container homelab at $0/month — infrastructure decisions are product decisions",
   ],
   ratings: [
     { label: "Technical Depth", score: 18, max: 20 },
