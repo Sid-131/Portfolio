@@ -1,5 +1,5 @@
 import { about } from '../data/portfolio';
-import NetworkGraph from './NetworkGraph';
+import NetworkGraph3D from './NetworkGraph3D';
 
 export default function About() {
   return (
@@ -35,7 +35,7 @@ export default function About() {
 
         {/* Network Graph */}
         <div className="glass-card p-8 flex items-center justify-center">
-          <NetworkGraph />
+          <NetworkGraph3D />
         </div>
       </div>
     </section>

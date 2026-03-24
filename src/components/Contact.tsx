@@ -75,12 +75,10 @@ export default function Contact() {
       </div>
 
       {/* Jellyfin Easter Egg */}
-      <a
-        href="https://media.sidmatrix.xyz/web/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 flex items-center gap-4 p-5 transition-colors hover:bg-white/60"
+      <div
+        className="mt-4 flex items-center gap-4 p-5 transition-colors hover:bg-white/60 cursor-pointer"
         style={{ background: 'rgba(255,255,255,0.35)', borderRadius: '16px', border: '1px solid rgba(184,220,240,0.4)' }}
+        onClick={() => window.open('https://media.sidmatrix.xyz/web/', '_blank')}
       >
         <div
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
@@ -99,7 +97,7 @@ export default function Contact() {
         >
           Request access
         </a>
-      </a>
+      </div>
 
       <footer
         className="mt-16 pt-6 text-center"
