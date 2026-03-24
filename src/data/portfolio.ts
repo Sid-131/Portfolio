@@ -64,6 +64,24 @@ export const experience = {
 
 export const projects = [
   {
+    id: "sidmatrix-homelab",
+    title: "Sidmatrix Homelab — Self-Hosted Infrastructure",
+    tags: ["Docker", "Python", "Linux", "FastAPI", "PostgreSQL", "Nginx", "Ollama", "Cloudflare"],
+    problem:
+      "Wanted a real production environment to build, deploy, and monitor full-stack applications — without cloud bills, vendor lock-in, or toy setups.",
+    solution:
+      "Repurposed a single laptop (AMD Ryzen 5, 8GB RAM) into a 19-container homelab running on Fedora 43. Hosts custom-built apps (Expensio), self-hosted services (Nextcloud, Jellyfin, Ollama + Open WebUI), and a full automation stack (Sonarr, Radarr, Prowlarr). Built a custom Python Observability Engine (~1000 lines, zero dependencies) with 13 audit sections and a 9-category weighted health score. Secured with SELinux enforcing, Cloudflare Tunnel (no open ports), SSH key-auth, and firewalld. Runs at $0/month, 35W power draw, 98/100 health score.",
+    insight: "Running real infrastructure makes infrastructure decisions feel obvious — reliability, cost, and security stop being tradeoffs and start being design constraints.",
+    github: "https://github.com/Sid-131",
+    live: null,
+    stats: [
+      { label: "Containers", value: "19/19" },
+      { label: "Health Score", value: "98/100" },
+      { label: "Monthly Cost", value: "$0" },
+      { label: "Power Draw", value: "~35W" },
+    ],
+  },
+  {
     id: "rag-chatbot",
     title: "RAG-Based Mutual Fund FAQ Chatbot",
     tags: ["Python", "Gemini 2.5 Flash", "ChromaDB", "FastAPI", "Streamlit"],
@@ -74,6 +92,32 @@ export const projects = [
     insight: "Facts-only. No investment advice. — guardrails before features.",
     github: "https://github.com/Sid-131/RAG_chat_bot",
     live: "https://rag-chat-bot-rouge.vercel.app",
+  },
+  {
+    id: "lumynex",
+    title: "Lumynex — Self-Healing Display Manager for Windows",
+    tags: ["Python", "PyQt5", "WMI", "Windows API", "SetupAPI", "PyInstaller"],
+    problem:
+      "Windows 11 has persistent, unfixed multi-monitor failures — monitors losing signal after sleep, display layouts resetting on reboot, wrong resolutions on secondary screens. Microsoft's response has been slow and fragmented since 2021. No single tool combines hardware-aware recommendations, automatic rollback safety, and a soft reset in one portable EXE.",
+    solution:
+      "Built a portable Windows utility that detects GPU (NVIDIA/AMD/Intel via WMI + registry fallback), enumerates all connected monitors, generates per-monitor optimal settings based on GPU tier, and applies them with CDS_TEST validation + automatic rollback. One-click soft reset cycles only the discrete GPU adapter via SetupAPI — Intel adapters never touched, Optimus laptops safe. Real-time monitoring via WM_DISPLAYCHANGE with polling fallback. Zero cables unplugged. Single portable EXE, no installer, no network calls.",
+    insight: "Your display fixes itself.",
+    github: "https://github.com/Sid-131/lumynex",
+    live: null,
+    download: "https://github.com/Sid-131/lumynex/releases/tag/v1.0",
+    upcoming: true,
+  },
+  {
+    id: "relay-teardown",
+    title: "Relay.app — New User Onboarding Teardown",
+    tags: ["Product Teardown", "UX Analysis", "PSYCH Framework", "PLG", "Onboarding"],
+    problem:
+      "Relay.app has a strong top-of-funnel but loses users at a critical moment: after the intent question, users land on a blank canvas with no guidance. Step caps appear only after workflows are built — making users feel trapped, not upgraded.",
+    solution:
+      "Mapped the full 8-step onboarding journey through personal walkthrough + cross-referenced 60+ verified G2 reviews. Applied the PSYCH framework to 6 key design decisions — 4 smart, 2 costly. Identified the Aha moment (live data preview, not dummy data), two key friction points, and 3 prioritized fixes: intent-matched templates, visible step counter from day 1, and an Advanced Mode toggle for power users.",
+    insight: "The blank canvas after the intent question and the hidden step cap aren't bugs — they're gaps in product thinking. Both are fixable in a sprint.",
+    github: null,
+    live: "/relay_onboarding.pdf",
   },
   {
     id: "voice-prd",
