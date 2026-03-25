@@ -34,29 +34,29 @@ export default function SnakeGame() {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
 
-    // Sky-tinted canvas background
-    ctx.fillStyle = '#EBF4FA';
+    // Dark canvas background
+    ctx.fillStyle = '#1a1d20';
     ctx.fillRect(0, 0, SIZE, SIZE);
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(43,64,53,0.06)';
+    ctx.strokeStyle = 'rgba(234,234,234,0.04)';
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= GRID; i++) {
       ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, SIZE); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(SIZE, i * CELL); ctx.stroke();
     }
 
-    // Food — nokia green circle
+    // Food — blue accent circle
     const f = foodRef.current;
-    ctx.fillStyle = '#3D8B37';
+    ctx.fillStyle = '#2d60ce';
     ctx.beginPath();
     ctx.arc(f.x * CELL + CELL / 2, f.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // Snake — deep green with fade
+    // Snake — cream with fade
     snakeRef.current.forEach((seg, i) => {
       const alpha = i === 0 ? 1 : Math.max(0.3, 1 - i * 0.025);
-      ctx.fillStyle = i === 0 ? '#2B4035' : `rgba(43,64,53,${alpha})`;
+      ctx.fillStyle = i === 0 ? '#eaeaea' : `rgba(234,234,234,${alpha})`;
       ctx.beginPath();
       ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
       ctx.fill();
@@ -133,27 +133,26 @@ export default function SnakeGame() {
   };
 
   const btnStyle = {
-    border: '1px solid rgba(43,64,53,0.15)',
-    borderRadius: '10px',
-    background: 'rgba(255,255,255,0.65)',
-    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(234,234,234,0.1)',
+    borderRadius: '8px',
+    background: 'rgba(234,234,234,0.05)',
     width: 40,
     height: 40,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    fontFamily: "'DM Mono', monospace",
+    fontFamily: "'JetBrains Mono', monospace",
     fontSize: 14,
-    color: '#2B4035',
+    color: '#eaeaea',
     userSelect: 'none' as const,
   };
 
   return (
-    <section id="game" className="relative z-20 mx-auto max-w-6xl px-6 py-24">
+    <section id="game" className="relative z-20 mx-auto max-w-[1024px] px-6 py-24">
       <span className="section-label">Interactive</span>
       <h2
-        className="mb-12 font-display italic font-bold text-deep"
+        className="mb-12 font-display font-bold text-deep tracking-tight"
         style={{ fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.1 }}
       >
         While You're Here
@@ -161,55 +160,51 @@ export default function SnakeGame() {
 
       <div className="flex flex-col items-center gap-6">
         <div className="glass-card relative p-6">
-          {/* HUD */}
           <div className="mb-3 flex items-center justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-deep/40">Nokia Snake v1.0</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-deep/35">Nokia Snake v1.0</span>
             <div className="flex gap-4">
-              {best > 0 && <span className="font-mono text-[10px] text-deep/40">Best: {best}</span>}
+              {best > 0 && <span className="font-mono text-[10px] text-deep/35">Best: {best}</span>}
               <span className="font-mono text-[10px] text-deep"># {score}</span>
             </div>
           </div>
 
-          {/* Canvas */}
           <div
             className="relative overflow-hidden"
-            style={{ borderRadius: '8px', border: '1px solid rgba(43,64,53,0.12)' }}
+            style={{ borderRadius: '8px', border: '1px solid rgba(234,234,234,0.08)' }}
           >
             <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
 
-            {/* Idle overlay */}
             {status === 'idle' && (
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm"
-                style={{ background: 'rgba(255,255,255,0.82)' }}
+                style={{ background: 'rgba(20,22,23,0.85)' }}
               >
-                <p className="mb-4 font-mono text-[10px] uppercase tracking-wider text-deep/40">Classic Nokia Snake</p>
+                <p className="mb-4 font-mono text-[10px] uppercase tracking-wider text-deep/35">Classic Nokia Snake</p>
                 <button onClick={startGame} className="pill-btn">Start Game</button>
-                <p className="mt-4 font-mono text-[9px] uppercase tracking-wider text-deep/30">
+                <p className="mt-4 font-mono text-[9px] uppercase tracking-wider text-deep/25">
                   Arrow keys or D-pad · Enter to start
                 </p>
               </div>
             )}
 
-            {/* Game over overlay */}
             {status === 'over' && (
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm"
-                style={{ background: 'rgba(255,255,255,0.88)' }}
+                style={{ background: 'rgba(20,22,23,0.9)' }}
               >
-                <p className="mb-1 font-mono text-[11px] uppercase tracking-wider" style={{ color: '#3D8B37' }}>
+                <p className="mb-1 font-mono text-[11px] uppercase tracking-wider" style={{ color: '#2d60ce' }}>
                   Game Over
                 </p>
-                <p className="mb-1 font-display italic text-5xl font-bold text-deep">{score}</p>
-                <p className="mb-8 font-mono text-[9px] uppercase tracking-wider text-deep/40">points scored</p>
+                <p className="mb-1 font-display text-5xl font-bold text-deep">{score}</p>
+                <p className="mb-8 font-mono text-[9px] uppercase tracking-wider text-deep/35">points scored</p>
                 <div className="flex flex-col items-center gap-3">
-                  <a href="#about" className="pill-btn">Check My Profile ↓</a>
+                  <a href="#about" className="pill-btn">Check My Profile</a>
                   <button
                     onClick={startGame}
-                    className="font-body text-sm text-deep/45 transition-colors hover:text-deep"
+                    className="font-body text-sm text-deep/40 transition-colors hover:text-deep"
                     style={{
-                      borderRadius: '100px',
-                      border: '1.5px solid rgba(43,64,53,0.2)',
+                      borderRadius: '4px',
+                      border: '1px solid rgba(234,234,234,0.15)',
                       padding: '8px 24px',
                     }}
                   >
@@ -220,7 +215,6 @@ export default function SnakeGame() {
             )}
           </div>
 
-          {/* D-pad */}
           <div className="mt-5 flex flex-col items-center gap-1">
             <div className="flex justify-center">
               <button style={btnStyle} onPointerDown={() => handleDpad('UP')} aria-label="Up">▲</button>
@@ -235,7 +229,7 @@ export default function SnakeGame() {
             </div>
           </div>
 
-          <p className="mt-3 text-center font-mono text-[9px] uppercase tracking-wider text-deep/30">
+          <p className="mt-3 text-center font-mono text-[9px] uppercase tracking-wider text-deep/25">
             Eat food to grow · Avoid walls & yourself
           </p>
         </div>

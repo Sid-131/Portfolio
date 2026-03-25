@@ -20,10 +20,9 @@ export function Ticker() {
     <div
       className="relative z-20 overflow-hidden py-4"
       style={{
-        borderTop: '1px solid rgba(43,64,53,0.08)',
-        borderBottom: '1px solid rgba(43,64,53,0.08)',
-        background: 'rgba(255,255,255,0.25)',
-        backdropFilter: 'blur(8px)',
+        borderTop: '1px solid rgba(234,234,234,0.06)',
+        borderBottom: '1px solid rgba(234,234,234,0.06)',
+        background: '#1c1f22',
       }}
     >
       <div

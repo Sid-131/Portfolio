@@ -22,35 +22,36 @@ export default function Navbar() {
         scrolled ? 'backdrop-blur-md' : ''
       }`}
       style={{
-        background: scrolled ? 'rgba(255,255,255,0.8)' : 'transparent',
-        borderBottom: scrolled ? '1px solid rgba(184,220,240,0.5)' : 'none',
+        background: scrolled ? 'rgba(20,22,23,0.85)' : 'transparent',
+        borderBottom: scrolled ? '1px solid rgba(234,234,234,0.08)' : 'none',
         backdropFilter: scrolled ? 'blur(12px)' : undefined,
       }}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        {/* Logo — italic serif pill */}
+      <div className="mx-auto flex max-w-[1024px] items-center justify-between px-6 py-4">
+        {/* Logo — geometric sans bold */}
         <a
           href="#hero"
-          className="font-display italic font-bold text-deep"
+          className="font-display font-bold text-deep"
           style={{
             fontSize: 16,
-            background: 'rgba(43,64,53,0.07)',
-            borderRadius: '100px',
+            background: 'rgba(234,234,234,0.07)',
+            borderRadius: '4px',
             padding: '6px 16px',
+            letterSpacing: '-0.02em',
           }}
         >
-          ss.
+          SS
         </a>
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) => (
+          {navItems.map((item, i) => (
             <a
               key={item.href}
               href={item.href}
-              className="font-body text-sm text-deep/60 transition-colors hover:text-deep"
+              className="font-mono text-[11px] uppercase tracking-widest text-deep/50 transition-colors hover:text-deep"
             >
-              {item.label}
+              <span className="text-sky">{String(i + 1).padStart(2, '0')}.</span> {item.label}
             </a>
           ))}
         </div>
@@ -75,8 +76,8 @@ export default function Navbar() {
         <div
           className="backdrop-blur-md md:hidden"
           style={{
-            background: 'rgba(255,255,255,0.8)',
-            borderTop: '1px solid rgba(184,220,240,0.4)',
+            background: 'rgba(20,22,23,0.95)',
+            borderTop: '1px solid rgba(234,234,234,0.08)',
           }}
         >
           <div className="flex flex-col px-6 py-4">
@@ -85,7 +86,7 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="py-3 font-body text-sm text-deep/60 transition-colors hover:text-deep"
+                className="py-3 font-mono text-[11px] uppercase tracking-widest text-deep/50 transition-colors hover:text-deep"
               >
                 {item.label}
               </a>
