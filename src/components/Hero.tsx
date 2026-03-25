@@ -108,21 +108,12 @@ export default function Hero() {
               <MagneticBtn
                 href={btn.href}
                 download={btn.download}
-                className={btn.primary ? 'pill-btn' : 'flex items-center gap-2 font-body text-sm text-deep/50 transition-colors hover:text-deep'}
+                className={btn.primary ? 'pill-btn' : btn.accent ? 'ghost-btn' : 'ghost-btn'}
                 style={
-                  btn.primary ? undefined :
                   btn.accent ? {
-                    borderRadius: '4px',
-                    background: 'rgba(226,117,0,0.15)',
-                    border: '1px solid rgba(226,117,0,0.35)',
-                    padding: '10px 22px',
-                    color: 'inherit',
-                    fontFamily: 'inherit',
-                  } : {
-                    borderRadius: '4px',
-                    border: '1px solid rgba(234,234,234,0.15)',
-                    padding: '10px 22px',
-                  }
+                    background: 'rgba(226,117,0,0.1)',
+                    borderColor: 'rgba(226,117,0,0.35)',
+                  } : undefined
                 }
               >
                 {btn.icon && <Download size={14} />}
