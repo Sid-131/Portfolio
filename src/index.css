@@ -16,6 +16,12 @@
 html {
   scroll-behavior: smooth;
 }
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
 
 /* ── Ticker ─────────────────────────────── */
 @keyframes ticker {
@@ -101,25 +107,78 @@ body {
 }
 
 /* Gradient button (replaces pill-btn) */
+/* Button with slide-in hover */
 .pill-btn {
   display: inline-block;
+  position: relative;
+  overflow: hidden;
   border-radius: 4px;
   padding: 10px 28px;
-  background: linear-gradient(135deg, #2d60ce 0%, #1a3f8a 100%);
+  background: #2d60ce;
   color: #eaeaea;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.02em;
   box-shadow: 0 2px 12px rgba(45, 96, 206, 0.3);
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  transition: box-shadow 0.3s ease, transform 0.2s ease, color 0.3s ease;
   text-decoration: none;
   cursor: pointer;
   border: none;
+  z-index: 1;
+}
+.pill-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #eaeaea;
+  transform: translateX(-101%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
 }
 .pill-btn:hover {
+  color: #141617;
   box-shadow: 0 6px 28px rgba(45, 96, 206, 0.5);
   transform: translateY(-2px);
+}
+.pill-btn:hover::before {
+  transform: translateX(0);
+}
+
+/* Ghost button with slide-in */
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  padding: 10px 22px;
+  background: transparent;
+  color: #eaeaea;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  border: 1px solid rgba(234, 234, 234, 0.15);
+  transition: color 0.3s ease, border-color 0.3s ease;
+  text-decoration: none;
+  cursor: pointer;
+  z-index: 1;
+}
+.ghost-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(234, 234, 234, 0.08);
+  transform: translateX(-101%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+.ghost-btn:hover {
+  border-color: rgba(234, 234, 234, 0.3);
+}
+.ghost-btn:hover::before {
+  transform: translateX(0);
 }
 
 /* Section label */
