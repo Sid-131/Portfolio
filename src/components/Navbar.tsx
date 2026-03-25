@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { navItems } from '../data/portfolio';
 
 export default function Navbar() {
@@ -13,13 +14,17 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav
+    <motion.nav
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'backdrop-blur-md' : ''
       }`}
       style={{
-        background: scrolled ? 'rgba(255,255,255,0.6)' : 'transparent',
+        background: scrolled ? 'rgba(255,255,255,0.8)' : 'transparent',
         borderBottom: scrolled ? '1px solid rgba(184,220,240,0.5)' : 'none',
+        backdropFilter: scrolled ? 'blur(12px)' : undefined,
       }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -91,6 +96,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-    </nav>
+    </motion.nav>
   );
 }

@@ -2,6 +2,7 @@ import BubbleBackground from './components/BubbleBackground';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import SnakeGame from './components/SnakeGame';
+import { Ticker } from './components/Ticker';
 import About from './components/About';
 import Experience from './components/Experience';
 import Projects from './components/Projects';
@@ -18,6 +19,7 @@ function App() {
       <main className="relative z-10">
         <Hero />
         <SnakeGame />
+        <Ticker />
         <About />
         <Experience />
         <Projects />
