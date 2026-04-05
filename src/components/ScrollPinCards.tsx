@@ -10,68 +10,43 @@ const accentColors = ['#2d60ce', '#e27500', '#00512f', '#2d60ce', '#e27500', '#0
 
 export default function ScrollPinCards() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray<HTMLElement>('.pin-card');
       const totalCards = cards.length;
 
-      // Pin the section while cards flip through
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: 'top top',
-        end: `+=${totalCards * 100}%`,
-        pin: true,
-        pinSpacing: true,
+      // Set all cards hidden initially except first
+      cards.forEach((card, i) => {
+        if (i > 0) gsap.set(card, { opacity: 0, y: 40 });
       });
 
-      // Animate each card: fade in + flip
+      // Single timeline drives everything — one ScrollTrigger total
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top',
+          end: `+=${totalCards * 80}vh`,
+          scrub: 1,
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+        },
+      });
+
       cards.forEach((card, i) => {
         const front = card.querySelector('.pin-card-front') as HTMLElement;
         const back = card.querySelector('.pin-card-back') as HTMLElement;
 
-        if (i > 0) {
-          gsap.set(card, { opacity: 0, y: 60 });
-        }
+        // Step 1: flip current card
+        tl.to(front, { rotateY: 180, duration: 1, ease: 'none' }, i * 3)
+          .to(back,  { rotateY: 360, duration: 1, ease: 'none' }, i * 3);
 
-        // Card entrance
-        if (i > 0) {
-          ScrollTrigger.create({
-            trigger: containerRef.current,
-            start: `${(i / totalCards) * 100}% top`,
-            end: `${((i + 0.3) / totalCards) * 100}% top`,
-            scrub: 0.5,
-            onUpdate: (self) => {
-              gsap.to(card, {
-                opacity: self.progress,
-                y: 60 * (1 - self.progress),
-                duration: 0.1,
-              });
-              // Hide previous card
-              if (i > 0 && cards[i - 1]) {
-                gsap.to(cards[i - 1], {
-                  opacity: 1 - self.progress,
-                  scale: 0.95,
-                  duration: 0.1,
-                });
-              }
-            },
-          });
+        // Step 2: fade out current, bring in next
+        if (i < totalCards - 1) {
+          tl.to(card, { opacity: 0, y: -30, duration: 0.8, ease: 'none' }, i * 3 + 1.5);
+          tl.to(cards[i + 1], { opacity: 1, y: 0, duration: 0.8, ease: 'none' }, i * 3 + 1.8);
         }
-
-        // Card flip on continued scroll
-        ScrollTrigger.create({
-          trigger: containerRef.current,
-          start: `${((i + 0.4) / totalCards) * 100}% top`,
-          end: `${((i + 0.7) / totalCards) * 100}% top`,
-          scrub: 0.5,
-          onUpdate: (self) => {
-            const rotateY = self.progress * 180;
-            if (front) front.style.transform = `rotateY(${rotateY}deg)`;
-            if (back) back.style.transform = `rotateY(${180 + rotateY}deg)`;
-          },
-        });
       });
     }, containerRef);
 
@@ -80,8 +55,8 @@ export default function ScrollPinCards() {
 
   return (
     <section id="projects" ref={containerRef} className="relative z-20">
-      {/* Header */}
-      <div className="mx-auto max-w-[1024px] px-6 pt-24 pb-12">
+      {/* Header — above the pin zone */}
+      <div className="mx-auto max-w-[1024px] px-6 pt-24 pb-10">
         <span className="section-label">Projects</span>
         <h2
           className="font-display font-bold text-deep tracking-tighter"
@@ -93,9 +68,8 @@ export default function ScrollPinCards() {
 
       {/* Pinned card stack */}
       <div
-        ref={cardsRef}
         className="relative mx-auto flex items-center justify-center"
-        style={{ height: '70vh', perspective: '1400px' }}
+        style={{ height: '72vh', perspective: '1400px' }}
       >
         {projects.map((project, idx) => {
           const accent = accentColors[idx % accentColors.length];
@@ -149,7 +123,7 @@ export default function ScrollPinCards() {
                 </div>
 
                 <p className="mb-4 font-body text-sm leading-relaxed text-deep/50">
-                  <span className="font-mono text-[10px] uppercase tracking-wide text-deep/30">Problem: </span>
+                  <span className="font-mono text-[10px] uppercase tracking-wide text-deep/30">Problem · </span>
                   {project.problem}
                 </p>
 
@@ -197,7 +171,7 @@ export default function ScrollPinCards() {
                 </h3>
 
                 <p className="mb-4 font-body text-sm leading-relaxed text-deep/50">
-                  <span className="font-mono text-[10px] uppercase tracking-wide text-deep/30">Solution: </span>
+                  <span className="font-mono text-[10px] uppercase tracking-wide text-deep/30">Solution · </span>
                   {project.solution}
                 </p>
 
@@ -239,14 +213,10 @@ export default function ScrollPinCards() {
           );
         })}
 
-        {/* Progress indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+        {/* Progress dots */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
           {projects.map((_, i) => (
-            <div
-              key={i}
-              className="pin-dot h-1.5 w-1.5 rounded-full"
-              style={{ background: 'rgba(234,234,234,0.2)' }}
-            />
+            <div key={i} className="h-1 w-4 rounded-full" style={{ background: 'rgba(234,234,234,0.15)' }} />
           ))}
         </div>
       </div>
