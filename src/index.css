@@ -34,11 +34,10 @@ html.lenis, html.lenis body {
   to { transform: rotate(360deg); }
 }
 
-/* ── Project card hover ─────────────────── */
+/* ── Project card hover (legacy, kept for reference) ── */
 .project-card {
   transition: transform 250ms cubic-bezier(0.16,1,0.3,1),
               box-shadow 250ms cubic-bezier(0.16,1,0.3,1);
-  will-change: transform;
 }
 .project-card:hover {
   transform: translateY(-4px);
