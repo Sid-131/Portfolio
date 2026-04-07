@@ -1,296 +1,626 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Github, X, ArrowUpRight } from 'lucide-react';
 
-// ── Data ────────────────────────────────────────────────────────────────────
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const SKILLS = [
+  'Product Strategy', 'RAG / LLMs', 'Docker & Linux',
+  'Python & FastAPI', 'User Research', 'Enterprise Storage',
+];
 
 const PROJECTS = [
   {
     id: 'homelab',
     name: 'Sidmatrix Homelab',
-    shortName: 'Homelab',
-    description:
-      '19-container self-hosted infrastructure on a single laptop — Grafana, Jellyfin, Nextcloud, Ollama, and more. Monitored by a custom 1,000-line Python observability engine. Runs at $0/month.',
-    cta: 'View on GitHub',
-    ctaHref: 'https://github.com/Sid-131',
-    iconBg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-    iconEmoji: '🖥️',
-    stats: ['19 containers', '98/100 health', '$0/month'],
-    mockups: [
-      { label: 'Observability Engine', content: '13 audit sections · 9-category weighted health score · zero dependencies' },
-      { label: 'Stack', content: 'Nextcloud · Jellyfin · Ollama · Sonarr · Radarr · Prowlarr · Grafana · PostgreSQL' },
-    ],
+    sub: '19-container self-hosted infrastructure monitored by a custom Python observability engine. $0/month.',
+    tags: ['Docker', 'Python', 'Linux'],
+    href: 'https://github.com/Sid-131',
   },
   {
     id: 'rag',
     name: 'RAG Chatbot',
-    shortName: 'RAG Chatbot',
-    description:
-      'Production RAG-based mutual fund FAQ chatbot with dual-layer guardrails — built with FastAPI, LangChain, and FAISS. Answers real customer queries with grounded, hallucination-resistant responses.',
-    cta: 'View on GitHub',
-    ctaHref: 'https://github.com/Sid-131/RAG_chat_bot',
-    iconBg: 'linear-gradient(135deg, #6c3483 0%, #2471a3 100%)',
-    iconEmoji: '🤖',
-    stats: ['FastAPI + LangChain', 'Dual guardrails', 'Production-ready'],
-    mockups: [
-      { label: 'Architecture', content: 'PDF ingestion → FAISS vector store → LangChain retriever → GPT response with guardrails' },
-      { label: 'Use Case', content: 'Mutual fund FAQ · Hallucination-resistant · Source-grounded answers' },
-    ],
+    sub: 'Production RAG-based mutual fund FAQ chatbot with dual-layer guardrails — FastAPI, LangChain, ChromaDB.',
+    tags: ['FastAPI', 'LangChain', 'Gemini'],
+    href: 'https://github.com/Sid-131/RAG_chat_bot',
   },
   {
     id: 'lumynex',
     name: 'Lumynex v1.0',
-    shortName: 'Lumynex',
-    description:
-      'A self-healing display manager for Windows that automatically restores your monitor layout after sleep, resume, or reboot. Shipped as a standalone v1.0 EXE — zero installation required.',
-    cta: 'Download v1.0',
-    ctaHref: 'https://github.com/Sid-131/lumynex/releases/tag/v1.0',
-    iconBg: 'linear-gradient(135deg, #e27500 0%, #f5a623 100%)',
-    iconEmoji: '🖥',
-    stats: ['Windows app', 'v1.0 shipped', 'Standalone EXE'],
-    mockups: [
-      { label: 'Problem', content: 'Windows loses your monitor layout every time you sleep, undock, or reboot' },
-      { label: 'Solution', content: 'One-click restore · Auto-detects connected displays · No installation needed' },
-    ],
+    sub: 'Self-healing Windows display manager — detects GPU, fixes layouts, ships as a standalone EXE.',
+    tags: ['Python', 'Windows API', 'PyInstaller'],
+    href: 'https://github.com/Sid-131/lumynex/releases/tag/v1.0',
   },
   {
     id: 'relay',
-    name: 'Relay Teardown',
-    shortName: 'Teardown',
-    description:
-      "Deep-dive product teardown of Relay.app's new user onboarding — exploring flows, friction points, and missed activation opportunities. Published as a structured PM artifact.",
-    cta: 'Read Teardown',
-    ctaHref: '/relay_onboarding.pdf',
-    iconBg: 'linear-gradient(135deg, #1a6b4a 0%, #27ae60 100%)',
-    iconEmoji: '🔍',
-    stats: ['Full PRD teardown', 'Onboarding analysis', 'Published artifact'],
-    mockups: [
-      { label: 'Scope', content: "Relay.app new user onboarding — activation flow, aha moment, friction mapping" },
-      { label: 'Output', content: 'Annotated flow diagrams · Drop-off hypotheses · Opportunity recommendations' },
-    ],
+    name: 'Relay.app Teardown',
+    sub: 'Deep-dive product teardown of new-user onboarding — PSYCH framework, 60+ G2 reviews, 3 prioritised fixes.',
+    tags: ['PM Teardown', 'Onboarding', 'PSYCH'],
+    href: '/relay_onboarding.pdf',
+  },
+  {
+    id: 'synciq',
+    name: 'SyncIQ Precheck Tool',
+    sub: 'Automated 7-section precheck for PowerScale SyncIQ failover — eliminates manual checklist blind spots.',
+    tags: ['Python', 'Bash', 'Dell'],
+    href: 'https://github.com/Sid-131',
   },
 ];
 
-const SOCIAL = [
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/siddhant-singh-3b58681a7' },
-  { label: 'GitHub', href: 'https://github.com/Sid-131' },
-];
+// ── Hooks ─────────────────────────────────────────────────────────────────────
 
-// ── Icon component ───────────────────────────────────────────────────────────
-
-function AppIcon({ project, onClick, isActive }: {
-  project: typeof PROJECTS[0];
-  onClick: () => void;
-  isActive: boolean;
-}) {
-  return (
-    <motion.div
-      className="flex flex-col items-center gap-3 cursor-pointer"
-      onClick={onClick}
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-    >
-      <motion.div
-        className="app-icon"
-        animate={{ scale: isActive ? 1.04 : 1 }}
-        style={{ background: project.iconBg }}
-      >
-        <span style={{ fontSize: 42 }}>{project.iconEmoji}</span>
-      </motion.div>
-      <span className="icon-label">{project.shortName}</span>
-    </motion.div>
-  );
-}
-
-// ── Mockup "screenshot" ──────────────────────────────────────────────────────
-
-function MockupCard({ mockup, rotate }: { mockup: { label: string; content: string }; rotate: number }) {
-  return (
-    <div
-      className="mockup-card p-5"
-      style={{ transform: `rotate(${rotate}deg)`, transformOrigin: 'center center' }}
-    >
-      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">{mockup.label}</p>
-      <p className="text-sm text-gray-600 leading-relaxed">{mockup.content}</p>
-    </div>
-  );
-}
-
-// ── Detail Panel ─────────────────────────────────────────────────────────────
-
-function DetailPanel({ project, onClose }: { project: typeof PROJECTS[0]; onClose: () => void }) {
+function useReveal(threshold = 0.18) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [onClose]);
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
+}
+
+// ── Particle Orb ──────────────────────────────────────────────────────────────
+
+function ParticleOrb() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Fibonacci sphere
+    const N = 280;
+    const phi = Math.PI * (3 - Math.sqrt(5));
+    const pts = Array.from({ length: N }, (_, i) => {
+      const y = 1 - (i / (N - 1)) * 2;
+      const r = Math.sqrt(Math.max(0, 1 - y * y));
+      const t = phi * i;
+      return { x: Math.cos(t) * r, y, z: Math.sin(t) * r };
+    });
+
+    let angle = 0;
+    let animId: number;
+
+    const draw = () => {
+      const dpr = window.devicePixelRatio;
+      const W = canvas.width / dpr;
+      const H = canvas.height / dpr;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      const R = Math.min(W, H) * 0.44;
+      const cx = W / 2;
+      const cy = H / 2;
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+      // Mouse-driven tilt
+      const tiltX = (mouseRef.current.y - window.innerHeight / 2) * 0.0002;
+      const tiltY = (mouseRef.current.x - window.innerWidth / 2) * 0.0002;
+      const cosTX = Math.cos(tiltX), sinTX = Math.sin(tiltX);
+      const cosTY = Math.cos(tiltY), sinTY = Math.sin(tiltY);
+
+      const proj = pts.map(({ x, y, z }) => {
+        // Y-axis rotation
+        const rx = x * cosA - z * sinA;
+        const ry = y;
+        const rz = x * sinA + z * cosA;
+        // X-axis tilt (mouse)
+        const ry2 = ry * cosTX - rz * sinTX;
+        const rz2 = ry * sinTX + rz * cosTX;
+        // Y-axis tilt (mouse)
+        const rx2 = rx * cosTY + rz2 * sinTY;
+        const rz3 = -rx * sinTY + rz2 * cosTY;
+        const depth = (rz3 + 1.6) / 2.6;
+        return { sx: cx + rx2 * R, sy: cy + ry2 * R, depth };
+      }).sort((a, b) => a.depth - b.depth);
+
+      proj.forEach(({ sx, sy, depth }) => {
+        ctx.beginPath();
+        ctx.arc(sx, sy, depth * 2.8 + 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(52,191,255,${(depth * 0.75 + 0.05).toFixed(2)})`;
+        ctx.fill();
+      });
+
+      ctx.restore();
+      angle += 0.004;
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+    const onMouse = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener('mousemove', onMouse);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouse);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />;
+}
+
+// ── Custom Cursor ─────────────────────────────────────────────────────────────
+
+function CustomCursor() {
+  const ref = useRef<HTMLDivElement>(null);
+  const pos = useRef({ x: -100, y: -100 });
+  const target = useRef({ x: -100, y: -100 });
+
+  useEffect(() => {
+    let id: number;
+    const animate = () => {
+      pos.current.x += (target.current.x - pos.current.x) * 0.14;
+      pos.current.y += (target.current.y - pos.current.y) * 0.14;
+      if (ref.current) {
+        ref.current.style.transform =
+          `translate(${pos.current.x - 10}px, ${pos.current.y - 10}px)`;
+      }
+      id = requestAnimationFrame(animate);
+    };
+    animate();
+
+    const move = (e: MouseEvent) => { target.current = { x: e.clientX, y: e.clientY }; };
+    const over = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('a,button,.project-card,.cta-pill,.cta-fill,.skill-pill'))
+        ref.current?.classList.add('hovered');
+    };
+    const out = () => ref.current?.classList.remove('hovered');
+
+    window.addEventListener('mousemove', move);
+    document.addEventListener('mouseover', over);
+    document.addEventListener('mouseout', out);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseover', over);
+      document.removeEventListener('mouseout', out);
+    };
+  }, []);
+
+  return <div ref={ref} className="cursor-dot" />;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+function Header() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <motion.div
-      className="detail-panel"
-      initial={{ x: '-100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '-100%' }}
-      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+    <header
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        height: 64, display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 clamp(24px, 5vw, 80px)',
+        background: scrolled ? 'rgba(241,229,213,0.9)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(223,210,191,0.6)' : 'none',
+        transition: 'background 0.4s ease, border-color 0.4s ease',
+      }}
     >
-      {/* Close */}
-      <button
-        onClick={onClose}
-        className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+      {/* Logo mark */}
+      <a
+        href="#hero"
+        style={{
+          fontFamily: "'Urbanist', sans-serif",
+          fontWeight: 900, fontSize: 20,
+          color: '#2d2a24', textDecoration: 'none',
+          letterSpacing: '-0.03em',
+        }}
       >
-        <X size={16} color="#888" />
-      </button>
-
-      {/* Icon */}
-      <div
-        className="app-icon mb-5"
-        style={{ background: project.iconBg, width: 64, height: 64, borderRadius: 16 }}
-      >
-        <span style={{ fontSize: 28 }}>{project.iconEmoji}</span>
-      </div>
-
-      {/* Name */}
-      <h2 className="text-[26px] font-semibold text-ink mb-2 leading-tight">{project.name}</h2>
-
-      {/* Stats pills */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {project.stats.map((s) => (
-          <span key={s} className="icon-label text-[12px] text-gray-500 py-1 px-3">{s}</span>
-        ))}
-      </div>
-
-      {/* Description */}
-      <p className="text-[15px] text-muted leading-relaxed mb-6">{project.description}</p>
-
-      {/* CTA */}
-      <a href={project.ctaHref} target="_blank" rel="noopener noreferrer" className="cta-btn mb-8">
-        {project.ctaHref.endsWith('.pdf') ? null : project.ctaHref.includes('github') ? <Github size={13} /> : <ArrowUpRight size={13} />}
-        {project.cta}
+        SS
       </a>
 
-      {/* Mockups */}
-      <div className="mt-4 flex flex-col gap-4">
-        {project.mockups.map((m, i) => (
-          <MockupCard key={i} mockup={m} rotate={i === 0 ? -2 : 2} />
+      {/* Right nav */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+        {['About', 'Projects', 'Contact'].map(s => (
+          <a
+            key={s}
+            href={`#${s.toLowerCase()}`}
+            className="mono-label"
+            style={{ textDecoration: 'none', color: '#5f5646', transition: 'color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#2d2a24')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#5f5646')}
+          >
+            {s}
+          </a>
         ))}
+        <a href="mailto:siddhant.singh131@outlook.com" className="cta-pill" style={{ padding: '8px 20px', fontSize: 13 }}>
+          GET IN TOUCH
+        </a>
       </div>
-    </motion.div>
+    </header>
   );
 }
 
-// ── Main App ─────────────────────────────────────────────────────────────────
+// ── Hero ──────────────────────────────────────────────────────────────────────
 
-export default function App() {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const activeProject = PROJECTS.find((p) => p.id === activeId) ?? null;
-  const containerRef = useRef<HTMLDivElement>(null);
+function Hero() {
+  const [vis, setVis] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVis(true), 80); return () => clearTimeout(t); }, []);
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (containerRef.current && e.target === containerRef.current) setActiveId(null);
-  };
+  const stagger = (word: string, baseDelay: number) =>
+    word.split('').map((ch, i) => (
+      <span
+        key={i}
+        className={`hero-letter${vis ? ' visible' : ''}`}
+        style={{ transitionDelay: `${baseDelay + i * 40}ms` }}
+      >
+        {ch}
+      </span>
+    ));
 
   return (
-    <div className="dot-grid relative h-screen w-screen overflow-hidden flex flex-col" style={{ background: '#f7f7f7' }}>
-
-      {/* Backdrop blur when panel open */}
-      <AnimatePresence>
-        {activeProject && (
-          <motion.div
-            ref={containerRef}
-            className="fixed inset-0 z-40"
-            initial={{ backdropFilter: 'blur(0px)', backgroundColor: 'rgba(247,247,247,0)' }}
-            animate={{ backdropFilter: 'blur(3px)', backgroundColor: 'rgba(247,247,247,0.4)' }}
-            exit={{ backdropFilter: 'blur(0px)', backgroundColor: 'rgba(247,247,247,0)' }}
-            transition={{ duration: 0.3 }}
-            onClick={handleBackdropClick}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Detail Panel */}
-      <AnimatePresence>
-        {activeProject && <DetailPanel project={activeProject} onClose={() => setActiveId(null)} />}
-      </AnimatePresence>
-
-      {/* Main content */}
-      <div className="flex flex-col items-center justify-center flex-1 px-6 gap-10">
-
-        {/* Hero headline */}
-        <motion.h1
-          className="font-display text-center text-ink"
-          style={{ fontFamily: "'Caveat', cursive", fontSize: 'clamp(40px, 6vw, 68px)', fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.01em' }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    <section
+      id="hero"
+      style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center',
+        padding: '80px clamp(24px, 5vw, 80px) 0',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      {/* Left: text */}
+      <div style={{ flex: '0 0 55%', zIndex: 2, paddingTop: 40 }}>
+        <p
+          className="mono-label"
+          style={{
+            marginBottom: 24, color: '#34bfff',
+            opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
+            transition: 'opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s',
+          }}
         >
-          Welcome to my corner on the internet :)
-        </motion.h1>
+          // PM · Builder · Bengaluru, India
+        </p>
 
-        {/* Projects grid */}
-        <motion.div
-          className="flex flex-wrap items-center justify-center gap-8 sm:gap-12"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        <h1
+          style={{
+            fontFamily: "'Urbanist', sans-serif",
+            fontWeight: 900,
+            fontSize: 'clamp(64px, 9vw, 112px)',
+            lineHeight: 0.95,
+            letterSpacing: '-0.04em',
+            color: '#2d2a24',
+            overflow: 'hidden',
+          }}
         >
-          {PROJECTS.map((p) => (
-            <AppIcon
-              key={p.id}
-              project={p}
-              onClick={() => setActiveId(activeId === p.id ? null : p.id)}
-              isActive={activeId === p.id}
-            />
-          ))}
-        </motion.div>
+          <div style={{ display: 'block', overflow: 'hidden' }}>
+            {stagger('SIDDHANT', 200)}
+          </div>
+          <div style={{ display: 'block', overflow: 'hidden', color: '#34bfff' }}>
+            {stagger('SINGH', 600)}
+          </div>
+        </h1>
 
-        {/* Bio */}
-        <motion.div
-          className="flex flex-col items-center gap-4 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        <p
+          style={{
+            marginTop: 36, fontSize: 18, color: '#5f5646', maxWidth: 440, lineHeight: 1.6,
+            opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
+            transition: 'opacity 0.6s ease 1s, transform 0.6s ease 1s',
+          }}
         >
-          <p style={{ maxWidth: 460, fontSize: 15, color: '#555', lineHeight: 1.75 }}>
-            Hey there! I'm Siddhant — a TSE at Dell specialising in enterprise storage, with a growing obsession for product thinking. I've resolved 1,000+ production incidents, built tools for real clusters, and shipped products people actually use.
-          </p>
-          <a href="mailto:siddhant.singh131@outlook.com" className="cta-btn">
-            Reach out <ArrowUpRight size={13} />
+          Builds products that turn enterprise chaos into clarity — from 1,000+ production incidents to shipped tools people actually use.
+        </p>
+
+        <div
+          style={{
+            marginTop: 40, display: 'flex', gap: 16, flexWrap: 'wrap',
+            opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
+            transition: 'opacity 0.6s ease 1.2s, transform 0.6s ease 1.2s',
+          }}
+        >
+          <a href="#projects" className="cta-pill">View Work</a>
+          <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="cta-pill">
+            Resume ↗
           </a>
-        </motion.div>
-      </div>
+        </div>
 
-      {/* Pagination dots */}
-      <motion.div
-        className="flex items-center justify-center gap-2 pb-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-      >
-        {[0, 1, 2].map((i) => (
-          <div key={i} className={`page-dot ${i === 0 ? 'active' : 'inactive'}`} />
-        ))}
-      </motion.div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-center gap-6 pb-5" style={{ borderTop: '1px solid #ebebeb' }}>
-        <div className="flex items-center gap-5 pt-4">
-          {SOCIAL.map((s) => (
-            <a
-              key={s.label}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a1a')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#888')}
-            >
-              {s.label}
-            </a>
-          ))}
-          <span style={{ fontSize: 12, color: '#bbb' }}>© 2026 Siddhant Singh. All rights reserved.</span>
+        {/* Scroll indicator */}
+        <div
+          style={{
+            marginTop: 80, display: 'flex', alignItems: 'center', gap: 12,
+            opacity: vis ? 0.5 : 0,
+            transition: 'opacity 0.6s ease 1.5s',
+          }}
+        >
+          <div style={{
+            width: 1, height: 48,
+            background: 'linear-gradient(to bottom, #5f5646, transparent)',
+          }} />
+          <span className="mono-label">scroll</span>
         </div>
       </div>
 
+      {/* Right: Particle orb */}
+      <div
+        style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0,
+          width: '48%', pointerEvents: 'none',
+        }}
+      >
+        <ParticleOrb />
+      </div>
+    </section>
+  );
+}
+
+// ── About ─────────────────────────────────────────────────────────────────────
+
+function About() {
+  const { ref, visible } = useReveal();
+
+  return (
+    <section id="about" ref={ref} style={{ padding: '120px clamp(24px, 5vw, 80px)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
+        {/* Left */}
+        <div>
+          <p className={`mono-label reveal${visible ? ' visible' : ''}`}>
+            // About
+          </p>
+          <h2
+            className={`reveal reveal-delay-1${visible ? ' visible' : ''}`}
+            style={{
+              fontFamily: "'Urbanist', sans-serif",
+              fontWeight: 900,
+              fontSize: 'clamp(44px, 5vw, 72px)',
+              lineHeight: 1,
+              letterSpacing: '-0.04em',
+              color: '#2d2a24',
+              marginTop: 16,
+            }}
+          >
+            Siddhant<br />
+            <span style={{ color: '#34bfff' }}>Singh.</span>
+          </h2>
+          <p
+            className={`mono-label reveal reveal-delay-2${visible ? ' visible' : ''}`}
+            style={{ marginTop: 20, color: '#34bfff' }}
+          >
+            // Bengaluru, India · Dell Technologies
+          </p>
+
+          <p
+            className={`reveal reveal-delay-3${visible ? ' visible' : ''}`}
+            style={{ marginTop: 32, color: '#5f5646', lineHeight: 1.7, fontSize: 15 }}
+          >
+            3.5 years resolving 1,000+ enterprise production incidents (S1/S2) at Dell. I learned product failure from the customer's side — under pressure, in real time. Then I built the tools that should've existed: a RAG chatbot, a Windows display manager, a 19-container homelab, PM teardowns. The NextLeap PM Fellowship is where the product thinking got formalised.
+          </p>
+        </div>
+
+        {/* Right: skills */}
+        <div>
+          <p className={`mono-label reveal${visible ? ' visible' : ''}`}>
+            // Skills
+          </p>
+          <div
+            className={`reveal reveal-delay-1${visible ? ' visible' : ''}`}
+            style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 10 }}
+          >
+            {SKILLS.map((s, i) => (
+              <span
+                key={s}
+                className="skill-pill"
+                style={{ transitionDelay: `${0.1 + i * 0.05}s` }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+
+          {/* Stats */}
+          <div
+            className={`reveal reveal-delay-3${visible ? ' visible' : ''}`}
+            style={{ marginTop: 56, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}
+          >
+            {[
+              { val: '1,000+', label: 'Enterprise incidents resolved' },
+              { val: '4', label: 'Shipped products' },
+              { val: '3.5 yrs', label: 'At Dell Technologies' },
+              { val: '$0/mo', label: '19-container homelab cost' },
+            ].map(({ val, label }) => (
+              <div key={label}>
+                <p style={{
+                  fontFamily: "'Urbanist', sans-serif",
+                  fontWeight: 900,
+                  fontSize: 40,
+                  letterSpacing: '-0.04em',
+                  color: '#2d2a24',
+                  lineHeight: 1,
+                }}>
+                  {val}
+                </p>
+                <p className="mono-label" style={{ marginTop: 6 }}>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Projects ──────────────────────────────────────────────────────────────────
+
+function Projects() {
+  const { ref, visible } = useReveal();
+
+  return (
+    <section id="projects" ref={ref} style={{ padding: '40px clamp(24px, 5vw, 80px) 120px' }}>
+      <div className={`reveal${visible ? ' visible' : ''}`}>
+        <p className="mono-label">// Selected</p>
+        <h2
+          style={{
+            fontFamily: "'Urbanist', sans-serif",
+            fontWeight: 900,
+            fontSize: 'clamp(56px, 8vw, 96px)',
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            color: '#2d2a24',
+            marginTop: 8, marginBottom: 16,
+          }}
+        >
+          Projects
+        </h2>
+      </div>
+
+      <div style={{ borderBottom: '1px solid #dfd2bf' }}>
+        {PROJECTS.map((p, i) => (
+          <a
+            key={p.id}
+            href={p.href}
+            target={p.href.startsWith('http') ? '_blank' : undefined}
+            rel={p.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            className={`project-card reveal reveal-delay-${Math.min(i + 1, 5)}${visible ? ' visible' : ''}`}
+            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 24 }}
+          >
+            <span className="project-card-num">{String(i + 1).padStart(2, '0')}</span>
+            <div style={{ flex: 1 }}>
+              <p className="project-card-name">{p.name}</p>
+              <p className="project-card-sub" style={{ marginTop: 4 }}>{p.sub}</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              {p.tags.map(t => (
+                <span
+                  key={t}
+                  className="mono-label"
+                  style={{
+                    background: 'rgba(52,191,255,0.08)',
+                    border: '1px solid rgba(52,191,255,0.2)',
+                    borderRadius: 4,
+                    padding: '4px 10px',
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <span className="project-card-arrow">↗</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Contact ───────────────────────────────────────────────────────────────────
+
+function Contact() {
+  const { ref, visible } = useReveal();
+
+  return (
+    <section
+      id="contact"
+      ref={ref}
+      style={{ padding: '120px clamp(24px, 5vw, 80px)', textAlign: 'left' }}
+    >
+      <p className={`mono-label reveal${visible ? ' visible' : ''}`}>// Contact</p>
+      <h2
+        className={`reveal reveal-delay-1${visible ? ' visible' : ''}`}
+        style={{
+          fontFamily: "'Urbanist', sans-serif",
+          fontWeight: 900,
+          fontSize: 'clamp(56px, 8vw, 100px)',
+          letterSpacing: '-0.04em',
+          lineHeight: 0.95,
+          color: '#2d2a24',
+          marginTop: 16,
+        }}
+      >
+        Let's work<br />
+        <span style={{ paddingLeft: 'clamp(24px, 4vw, 80px)' }}>together.</span>
+      </h2>
+
+      <div
+        className={`reveal reveal-delay-2${visible ? ' visible' : ''}`}
+        style={{ marginTop: 56, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}
+      >
+        <a href="mailto:siddhant.singh131@outlook.com" className="cta-fill">
+          Start a conversation ↗
+        </a>
+        <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="cta-pill">
+          Resume ↗
+        </a>
+      </div>
+    </section>
+  );
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+function Footer() {
+  return (
+    <footer style={{ background: '#f5efe6', borderTop: '1px solid #e8ddd0' }}>
+      <div
+        style={{
+          maxWidth: 1280, margin: '0 auto',
+          padding: '40px clamp(24px, 5vw, 80px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: 16,
+        }}
+      >
+        <div style={{ display: 'flex', gap: 32 }}>
+          {[
+            { label: 'LinkedIn', href: 'https://linkedin.com/in/siddhant-singh-3b58681a7' },
+            { label: 'GitHub', href: 'https://github.com/Sid-131' },
+            { label: 'Email', href: 'mailto:siddhant.singh131@outlook.com' },
+          ].map(l => (
+            <a
+              key={l.label}
+              href={l.href}
+              target={l.href.startsWith('http') ? '_blank' : undefined}
+              rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+              className="mono-label"
+              style={{ textDecoration: 'none', transition: 'color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#2d2a24')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#5f5646')}
+            >
+              {l.label}
+            </a>
+          ))}
+        </div>
+
+        <p className="mono-label">© 2026 Siddhant Singh. All rights reserved.</p>
+
+        <p className="mono-label" style={{ color: '#34bfff' }}>
+          PM · Builder · Bengaluru
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  return (
+    <div style={{ background: '#f1e5d5', maxWidth: '100vw' }}>
+      <CustomCursor />
+      <Header />
+      <Hero />
+      <About />
+      <Projects />
+      <Contact />
+      <Footer />
     </div>
   );
 }
