@@ -49,6 +49,13 @@ const PROJECTS = [
     href: '/relay_onboarding.pdf',
   },
   {
+    id: 'cube',
+    name: 'Cube AI Teardown',
+    sub: 'Product teardown & growth audit of Cube AI — 6 UX/trust problems identified, 5 interventions, competitive analysis vs Semrush & Jasper.',
+    tags: ['PM Teardown', 'Growth Audit', 'UX Analysis'],
+    href: '/Cube_AI_Product_Teardown.pdf',
+  },
+  {
     id: 'synciq',
     name: 'SyncIQ Precheck Tool',
     sub: 'Automated 7-section precheck for PowerScale SyncIQ failover — eliminates manual checklist blind spots.',
