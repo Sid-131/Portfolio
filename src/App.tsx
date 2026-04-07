@@ -1,4 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+// ── Snake constants ───────────────────────────────────────────────────────────
+const GRID = 20, CELL = 18, SIZE = GRID * CELL;
+type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
+type Pt = { x: number; y: number };
+type GameStatus = 'idle' | 'playing' | 'over';
+function randomFood(snake: Pt[]): Pt {
+  let p: Pt;
+  do { p = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) }; }
+  while (snake.some(s => s.x === p.x && s.y === p.y));
+  return p;
+}
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -44,6 +56,243 @@ const PROJECTS = [
     href: 'https://github.com/Sid-131',
   },
 ];
+
+// ── Snake Game ────────────────────────────────────────────────────────────────
+
+function SnakeGame() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [status, setStatus] = useState<GameStatus>('idle');
+  const [score, setScore] = useState(0);
+  const [best, setBest] = useState(0);
+  const snakeRef = useRef<Pt[]>([]);
+  const dirRef = useRef<Dir>('RIGHT');
+  const nextDirRef = useRef<Dir>('RIGHT');
+  const foodRef = useRef<Pt>({ x: 15, y: 10 });
+  const scoreRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const statusRef = useRef<GameStatus>('idle');
+
+  const draw = useCallback(() => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    ctx.fillStyle = '#2d2a24';
+    ctx.fillRect(0, 0, SIZE, SIZE);
+    ctx.strokeStyle = 'rgba(241,229,213,0.05)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= GRID; i++) {
+      ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, SIZE); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(SIZE, i * CELL); ctx.stroke();
+    }
+    const f = foodRef.current;
+    ctx.fillStyle = '#34bfff';
+    ctx.beginPath();
+    ctx.arc(f.x * CELL + CELL / 2, f.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
+    ctx.fill();
+    snakeRef.current.forEach((seg, i) => {
+      const alpha = i === 0 ? 1 : Math.max(0.25, 1 - i * 0.03);
+      ctx.fillStyle = i === 0 ? '#f1e5d5' : `rgba(241,229,213,${alpha})`;
+      ctx.beginPath();
+      ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 3);
+      ctx.fill();
+    });
+  }, []);
+
+  const endGame = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    statusRef.current = 'over';
+    setStatus('over');
+    setBest(prev => Math.max(prev, scoreRef.current));
+  }, []);
+
+  const tick = useCallback(() => {
+    dirRef.current = nextDirRef.current;
+    const head = snakeRef.current[0];
+    const nh: Pt = {
+      x: head.x + (dirRef.current === 'RIGHT' ? 1 : dirRef.current === 'LEFT' ? -1 : 0),
+      y: head.y + (dirRef.current === 'DOWN' ? 1 : dirRef.current === 'UP' ? -1 : 0),
+    };
+    if (nh.x < 0 || nh.x >= GRID || nh.y < 0 || nh.y >= GRID) { endGame(); return; }
+    if (snakeRef.current.some(s => s.x === nh.x && s.y === nh.y)) { endGame(); return; }
+    const newSnake = [nh, ...snakeRef.current];
+    if (nh.x === foodRef.current.x && nh.y === foodRef.current.y) {
+      scoreRef.current += 10; setScore(scoreRef.current);
+      foodRef.current = randomFood(newSnake);
+    } else { newSnake.pop(); }
+    snakeRef.current = newSnake;
+    draw();
+  }, [draw, endGame]);
+
+  const startGame = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    snakeRef.current = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+    dirRef.current = nextDirRef.current = 'RIGHT';
+    foodRef.current = randomFood(snakeRef.current);
+    scoreRef.current = 0; setScore(0);
+    statusRef.current = 'playing'; setStatus('playing');
+    draw();
+    timerRef.current = setInterval(tick, 120);
+  }, [draw, tick]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+      const d = dirRef.current;
+      if (e.key === 'ArrowUp' && d !== 'DOWN') nextDirRef.current = 'UP';
+      else if (e.key === 'ArrowDown' && d !== 'UP') nextDirRef.current = 'DOWN';
+      else if (e.key === 'ArrowLeft' && d !== 'RIGHT') nextDirRef.current = 'LEFT';
+      else if (e.key === 'ArrowRight' && d !== 'LEFT') nextDirRef.current = 'RIGHT';
+      else if (e.key === 'Enter' && statusRef.current !== 'playing') startGame();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [startGame]);
+
+  useEffect(() => { draw(); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [draw]);
+
+  const handleDpad = (d: Dir) => {
+    const cur = dirRef.current;
+    if (d === 'UP' && cur !== 'DOWN') nextDirRef.current = 'UP';
+    else if (d === 'DOWN' && cur !== 'UP') nextDirRef.current = 'DOWN';
+    else if (d === 'LEFT' && cur !== 'RIGHT') nextDirRef.current = 'LEFT';
+    else if (d === 'RIGHT' && cur !== 'LEFT') nextDirRef.current = 'RIGHT';
+  };
+
+  const dpadBtn: React.CSSProperties = {
+    width: 44, height: 44, borderRadius: 10,
+    border: '1px solid rgba(45,42,36,0.12)',
+    background: '#fff',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: 14, color: '#2d2a24',
+    cursor: 'none', userSelect: 'none',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+    transition: 'background 0.15s ease',
+  };
+
+  return (
+    <section id="game" style={{ padding: '0 clamp(24px, 5vw, 80px) 100px' }}>
+      <p className="mono-label">// Interactive</p>
+      <h2 style={{
+        fontFamily: "'Urbanist', sans-serif", fontWeight: 900,
+        fontSize: 'clamp(44px, 6vw, 72px)', letterSpacing: '-0.04em', lineHeight: 1,
+        color: '#2d2a24', marginTop: 8, marginBottom: 40,
+      }}>
+        While You're Here
+      </h2>
+
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{
+          background: '#fff', borderRadius: 24,
+          boxShadow: '0 4px 32px rgba(0,0,0,0.08)',
+          padding: 24, display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+        }}>
+          {/* Score bar */}
+          <div style={{ width: SIZE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#5f5646', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Nokia Snake v1.0
+            </span>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {best > 0 && <span style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#5f5646' }}>Best: {best}</span>}
+              <span style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#2d2a24' }}># {score}</span>
+            </div>
+          </div>
+
+          {/* Canvas */}
+          <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(45,42,36,0.08)' }}>
+            <canvas ref={canvasRef} width={SIZE} height={SIZE} style={{ display: 'block' }} />
+
+            {status === 'idle' && (
+              <div style={{
+                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 16,
+                background: 'rgba(45,42,36,0.88)', backdropFilter: 'blur(4px)',
+              }}>
+                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 10, color: 'rgba(241,229,213,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  Classic Nokia Snake
+                </p>
+                <button onClick={startGame} className="cta-pill" style={{ fontSize: 13, padding: '10px 28px' }}>
+                  Start Game
+                </button>
+                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 9, color: 'rgba(241,229,213,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  Arrow keys or D-pad · Enter to start
+                </p>
+              </div>
+            )}
+
+            {status === 'over' && (
+              <div style={{
+                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 8,
+                background: 'rgba(45,42,36,0.92)', backdropFilter: 'blur(4px)',
+              }}>
+                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#34bfff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Game Over</p>
+                <p style={{ fontFamily: "'Urbanist'", fontWeight: 900, fontSize: 48, color: '#f1e5d5', letterSpacing: '-0.04em', lineHeight: 1 }}>{score}</p>
+                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 9, color: 'rgba(241,229,213,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>points scored</p>
+                <button onClick={startGame} className="cta-pill">Play Again</button>
+              </div>
+            )}
+          </div>
+
+          {/* D-pad */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <button style={dpadBtn} onPointerDown={() => handleDpad('UP')}>▲</button>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button style={dpadBtn} onPointerDown={() => handleDpad('LEFT')}>◀</button>
+              <div style={{ width: 44 }} />
+              <button style={dpadBtn} onPointerDown={() => handleDpad('RIGHT')}>▶</button>
+            </div>
+            <button style={dpadBtn} onPointerDown={() => handleDpad('DOWN')}>▼</button>
+          </div>
+          <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 9, color: '#5f5646', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Eat food to grow · Avoid walls & yourself
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Jellyfin Easter Egg ───────────────────────────────────────────────────────
+
+function JellyfinCard() {
+  return (
+    <div
+      onClick={() => window.open('https://media.sidmatrix.xyz/web/', '_blank')}
+      style={{
+        background: '#fff', borderRadius: 16, padding: '20px 24px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
+        border: '1px solid rgba(45,42,36,0.07)',
+        cursor: 'none', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        display: 'flex', alignItems: 'center', gap: 16, maxWidth: 380,
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = 'none';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.07)';
+      }}
+    >
+      <div style={{
+        width: 48, height: 48, borderRadius: 12, flexShrink: 0,
+        background: 'linear-gradient(135deg, #00a4dc 0%, #0090c8 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 24,
+      }}>
+        🎬
+      </div>
+      <div>
+        <p style={{ fontFamily: "'Urbanist'", fontWeight: 700, fontSize: 15, color: '#2d2a24' }}>
+          Want to watch a movie?
+        </p>
+        <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#5f5646', marginTop: 3 }}>
+          media.sidmatrix.xyz · email for credentials
+        </p>
+      </div>
+      <span style={{ marginLeft: 'auto', fontSize: 16, color: '#dfd2bf' }}>↗</span>
+    </div>
+  );
+}
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
@@ -552,14 +801,25 @@ function Contact() {
 
       <div
         className={`reveal reveal-delay-2${visible ? ' visible' : ''}`}
-        style={{ marginTop: 56, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}
+        style={{ marginTop: 56, display: 'flex', flexDirection: 'column', gap: 24 }}
       >
-        <a href="mailto:siddhant.singh131@outlook.com" className="cta-fill">
-          Start a conversation ↗
-        </a>
-        <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="cta-pill">
-          Resume ↗
-        </a>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <a
+            href="mailto:siddhant.singh131@outlook.com"
+            className="cta-fill"
+            onClick={e => {
+              // Fallback: copy email if mailto doesn't open
+              e.preventDefault();
+              window.location.href = 'mailto:siddhant.singh131@outlook.com';
+            }}
+          >
+            siddhant.singh131@outlook.com ↗
+          </a>
+          <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="cta-pill">
+            Resume ↗
+          </a>
+        </div>
+        <JellyfinCard />
       </div>
     </section>
   );
@@ -617,6 +877,7 @@ export default function App() {
       <CustomCursor />
       <Header />
       <Hero />
+      <SnakeGame />
       <About />
       <Projects />
       <Contact />
