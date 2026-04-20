@@ -1,894 +1,826 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// ── Snake constants ───────────────────────────────────────────────────────────
-const GRID = 20, CELL = 18, SIZE = GRID * CELL;
-type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
-type Pt = { x: number; y: number };
-type GameStatus = 'idle' | 'playing' | 'over';
-function randomFood(snake: Pt[]): Pt {
-  let p: Pt;
-  do { p = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) }; }
-  while (snake.some(s => s.x === p.x && s.y === p.y));
-  return p;
-}
+// ── Constants ────────────────────────────────────────────────────────────────
 
-// ── Data ─────────────────────────────────────────────────────────────────────
-
-const SKILLS = [
-  'Product Strategy', 'RAG / LLMs', 'Docker & Linux',
-  'Python & FastAPI', 'User Research', 'Enterprise Storage',
-];
+const ORANGE = '#FF4D00';
+const EASE   = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
 const PROJECTS = [
-  {
-    id: 'homelab',
-    name: 'Sidmatrix Homelab',
-    sub: '19-container self-hosted infrastructure monitored by a custom Python observability engine. $0/month.',
-    tags: ['Docker', 'Python', 'Linux'],
-    href: 'https://github.com/Sid-131',
-  },
-  {
-    id: 'rag',
-    name: 'RAG Chatbot',
-    sub: 'Production RAG-based mutual fund FAQ chatbot with dual-layer guardrails — FastAPI, LangChain, ChromaDB.',
-    tags: ['FastAPI', 'LangChain', 'Gemini'],
-    href: 'https://github.com/Sid-131/RAG_chat_bot',
-  },
-  {
-    id: 'lumynex',
-    name: 'Lumynex v1.0',
-    sub: 'Self-healing Windows display manager — detects GPU, fixes layouts, ships as a standalone EXE.',
-    tags: ['Python', 'Windows API', 'PyInstaller'],
-    href: 'https://github.com/Sid-131/lumynex/releases/tag/v1.0',
-  },
-  {
-    id: 'relay',
-    name: 'Relay.app Teardown',
-    sub: 'Deep-dive product teardown of new-user onboarding — PSYCH framework, 60+ G2 reviews, 3 prioritised fixes.',
-    tags: ['PM Teardown', 'Onboarding', 'PSYCH'],
-    href: '/relay_onboarding.pdf',
-  },
-  {
-    id: 'cube',
-    name: 'Cube AI Teardown',
-    sub: 'Product teardown & growth audit of Cube AI — 6 UX/trust problems identified, 5 interventions, competitive analysis vs Semrush & Jasper.',
-    tags: ['PM Teardown', 'Growth Audit', 'UX Analysis'],
-    href: '/Cube_AI_Product_Teardown.pdf',
-  },
-  {
-    id: 'synciq',
-    name: 'SyncIQ Precheck Tool',
-    sub: 'Automated 7-section precheck for PowerScale SyncIQ failover — eliminates manual checklist blind spots.',
-    tags: ['Python', 'Bash', 'Dell'],
-    href: 'https://github.com/Sid-131',
-  },
+  { id: 'homelab', name: 'Sidmatrix Homelab',      cat: 'Infrastructure · 2024', sub: '19-container homelab at $0/month',                    href: 'https://github.com/Sid-131',                                      accent: '#FF4D00', bg: 'linear-gradient(135deg,#1a0800 0%,#0a0400 100%)' },
+  { id: 'rag',     name: 'RAG Chatbot',             cat: 'AI · Production · 2024', sub: 'Mutual fund FAQ with dual-layer guardrails',            href: 'https://github.com/Sid-131/RAG_chat_bot',                         accent: '#6366f1', bg: 'linear-gradient(135deg,#08080f 0%,#040408 100%)' },
+  { id: 'lumynex', name: 'Lumynex v1.0',            cat: 'Windows · Shipped · 2025', sub: 'Self-healing display manager, standalone EXE',       href: 'https://github.com/Sid-131/lumynex/releases/tag/v1.0',            accent: '#FF8C00', bg: 'linear-gradient(135deg,#120800 0%,#080400 100%)' },
+  { id: 'relay',   name: 'Relay.app Teardown',      cat: 'PM Work · 2025',       sub: 'Onboarding teardown, PSYCH framework, 3 fixes',          href: '/relay_onboarding.pdf',                                           accent: '#00C896', bg: 'linear-gradient(135deg,#001510 0%,#000a08 100%)' },
+  { id: 'cube',    name: 'Cube AI Teardown',        cat: 'PM Work · 2026',       sub: '6 UX problems identified, 5 interventions, growth audit', href: '/Cube_AI_Product_Teardown.pdf',                                   accent: ORANGE,   bg: 'linear-gradient(135deg,#120000 0%,#080000 100%)' },
+  { id: 'synciq',  name: 'SyncIQ Precheck Tool',    cat: 'Dell · Internal · 2023', sub: '7-section automated precheck for SyncIQ failover',     href: 'https://github.com/Sid-131',                                      accent: '#888',   bg: 'linear-gradient(135deg,#0d0d0d 0%,#080808 100%)' },
 ];
 
-// ── Snake Game ────────────────────────────────────────────────────────────────
+const SOCIALS = [
+  { label: 'LI', full: 'LinkedIn', href: 'https://linkedin.com/in/siddhant-singh-3b58681a7' },
+  { label: 'GH', full: 'GitHub',   href: 'https://github.com/Sid-131' },
+  { label: 'EM', full: 'Email',    href: 'mailto:siddhant.singh131@outlook.com' },
+];
 
-function SnakeGame() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [status, setStatus] = useState<GameStatus>('idle');
-  const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
-  const snakeRef = useRef<Pt[]>([]);
-  const dirRef = useRef<Dir>('RIGHT');
-  const nextDirRef = useRef<Dir>('RIGHT');
-  const foodRef = useRef<Pt>({ x: 15, y: 10 });
-  const scoreRef = useRef(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const statusRef = useRef<GameStatus>('idle');
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-  const draw = useCallback(() => {
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) return;
-    ctx.fillStyle = '#2d2a24';
-    ctx.fillRect(0, 0, SIZE, SIZE);
-    ctx.strokeStyle = 'rgba(241,229,213,0.05)';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i <= GRID; i++) {
-      ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, SIZE); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(SIZE, i * CELL); ctx.stroke();
-    }
-    const f = foodRef.current;
-    ctx.fillStyle = '#34bfff';
-    ctx.beginPath();
-    ctx.arc(f.x * CELL + CELL / 2, f.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
-    ctx.fill();
-    snakeRef.current.forEach((seg, i) => {
-      const alpha = i === 0 ? 1 : Math.max(0.25, 1 - i * 0.03);
-      ctx.fillStyle = i === 0 ? '#f1e5d5' : `rgba(241,229,213,${alpha})`;
-      ctx.beginPath();
-      ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 3);
-      ctx.fill();
-    });
-  }, []);
+const cab = "'Cabinet Grotesk', ui-sans-serif, sans-serif";
+const sat = "'Satoshi', ui-sans-serif, sans-serif";
+const mono = "'JetBrains Mono', ui-monospace, monospace";
 
-  const endGame = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    statusRef.current = 'over';
-    setStatus('over');
-    setBest(prev => Math.max(prev, scoreRef.current));
-  }, []);
+function monoTag(_text: string, color = 'rgba(255,255,255,0.3)'): React.CSSProperties {
+  return { fontFamily: mono, fontSize: 10, letterSpacing: '0.5em', color, textTransform: 'uppercase' as const };
+}
 
-  const tick = useCallback(() => {
-    dirRef.current = nextDirRef.current;
-    const head = snakeRef.current[0];
-    const nh: Pt = {
-      x: head.x + (dirRef.current === 'RIGHT' ? 1 : dirRef.current === 'LEFT' ? -1 : 0),
-      y: head.y + (dirRef.current === 'DOWN' ? 1 : dirRef.current === 'UP' ? -1 : 0),
-    };
-    if (nh.x < 0 || nh.x >= GRID || nh.y < 0 || nh.y >= GRID) { endGame(); return; }
-    if (snakeRef.current.some(s => s.x === nh.x && s.y === nh.y)) { endGame(); return; }
-    const newSnake = [nh, ...snakeRef.current];
-    if (nh.x === foodRef.current.x && nh.y === foodRef.current.y) {
-      scoreRef.current += 10; setScore(scoreRef.current);
-      foodRef.current = randomFood(newSnake);
-    } else { newSnake.pop(); }
-    snakeRef.current = newSnake;
-    draw();
-  }, [draw, endGame]);
+// ── Grain overlay ────────────────────────────────────────────────────────────
 
-  const startGame = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    snakeRef.current = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
-    dirRef.current = nextDirRef.current = 'RIGHT';
-    foodRef.current = randomFood(snakeRef.current);
-    scoreRef.current = 0; setScore(0);
-    statusRef.current = 'playing'; setStatus('playing');
-    draw();
-    timerRef.current = setInterval(tick, 120);
-  }, [draw, tick]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
-      const d = dirRef.current;
-      if (e.key === 'ArrowUp' && d !== 'DOWN') nextDirRef.current = 'UP';
-      else if (e.key === 'ArrowDown' && d !== 'UP') nextDirRef.current = 'DOWN';
-      else if (e.key === 'ArrowLeft' && d !== 'RIGHT') nextDirRef.current = 'LEFT';
-      else if (e.key === 'ArrowRight' && d !== 'LEFT') nextDirRef.current = 'RIGHT';
-      else if (e.key === 'Enter' && statusRef.current !== 'playing') startGame();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [startGame]);
-
-  useEffect(() => { draw(); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [draw]);
-
-  const handleDpad = (d: Dir) => {
-    const cur = dirRef.current;
-    if (d === 'UP' && cur !== 'DOWN') nextDirRef.current = 'UP';
-    else if (d === 'DOWN' && cur !== 'UP') nextDirRef.current = 'DOWN';
-    else if (d === 'LEFT' && cur !== 'RIGHT') nextDirRef.current = 'LEFT';
-    else if (d === 'RIGHT' && cur !== 'LEFT') nextDirRef.current = 'RIGHT';
-  };
-
-  const dpadBtn: React.CSSProperties = {
-    width: 44, height: 44, borderRadius: 10,
-    border: '1px solid rgba(45,42,36,0.12)',
-    background: '#fff',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 14, color: '#2d2a24',
-    cursor: 'none', userSelect: 'none',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-    transition: 'background 0.15s ease',
-  };
-
+function GrainOverlay() {
   return (
-    <section id="game" style={{ padding: '0 clamp(24px, 5vw, 80px) 100px' }}>
-      <p className="mono-label">// Interactive</p>
-      <h2 style={{
-        fontFamily: "'Urbanist', sans-serif", fontWeight: 900,
-        fontSize: 'clamp(44px, 6vw, 72px)', letterSpacing: '-0.04em', lineHeight: 1,
-        color: '#2d2a24', marginTop: 8, marginBottom: 40,
-      }}>
-        While You're Here
-      </h2>
-
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <div style={{
-          background: '#fff', borderRadius: 24,
-          boxShadow: '0 4px 32px rgba(0,0,0,0.08)',
-          padding: 24, display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-        }}>
-          {/* Score bar */}
-          <div style={{ width: SIZE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#5f5646', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Nokia Snake v1.0
-            </span>
-            <div style={{ display: 'flex', gap: 16 }}>
-              {best > 0 && <span style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#5f5646' }}>Best: {best}</span>}
-              <span style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#2d2a24' }}># {score}</span>
-            </div>
-          </div>
-
-          {/* Canvas */}
-          <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(45,42,36,0.08)' }}>
-            <canvas ref={canvasRef} width={SIZE} height={SIZE} style={{ display: 'block' }} />
-
-            {status === 'idle' && (
-              <div style={{
-                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 16,
-                background: 'rgba(45,42,36,0.88)', backdropFilter: 'blur(4px)',
-              }}>
-                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 10, color: 'rgba(241,229,213,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                  Classic Nokia Snake
-                </p>
-                <button onClick={startGame} className="cta-pill" style={{ fontSize: 13, padding: '10px 28px' }}>
-                  Start Game
-                </button>
-                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 9, color: 'rgba(241,229,213,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Arrow keys or D-pad · Enter to start
-                </p>
-              </div>
-            )}
-
-            {status === 'over' && (
-              <div style={{
-                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 8,
-                background: 'rgba(45,42,36,0.92)', backdropFilter: 'blur(4px)',
-              }}>
-                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#34bfff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Game Over</p>
-                <p style={{ fontFamily: "'Urbanist'", fontWeight: 900, fontSize: 48, color: '#f1e5d5', letterSpacing: '-0.04em', lineHeight: 1 }}>{score}</p>
-                <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 9, color: 'rgba(241,229,213,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>points scored</p>
-                <button onClick={startGame} className="cta-pill">Play Again</button>
-              </div>
-            )}
-          </div>
-
-          {/* D-pad */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <button style={dpadBtn} onPointerDown={() => handleDpad('UP')}>▲</button>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button style={dpadBtn} onPointerDown={() => handleDpad('LEFT')}>◀</button>
-              <div style={{ width: 44 }} />
-              <button style={dpadBtn} onPointerDown={() => handleDpad('RIGHT')}>▶</button>
-            </div>
-            <button style={dpadBtn} onPointerDown={() => handleDpad('DOWN')}>▼</button>
-          </div>
-          <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 9, color: '#5f5646', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Eat food to grow · Avoid walls & yourself
-          </p>
-        </div>
-      </div>
-    </section>
+    <>
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <filter id="noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+        </defs>
+      </svg>
+      <div className="grain-overlay" />
+    </>
   );
 }
 
-// ── Jellyfin Easter Egg ───────────────────────────────────────────────────────
+// ── Mesh blobs ────────────────────────────────────────────────────────────────
 
-function JellyfinCard() {
+function MeshBlobs() {
+  const b1 = useRef<HTMLDivElement>(null);
+  const b2 = useRef<HTMLDivElement>(null);
+  const b3 = useRef<HTMLDivElement>(null);
+  const mx = useRef(0); const my = useRef(0);
+
+  useEffect(() => {
+    const onMouse = (e: MouseEvent) => {
+      mx.current = (e.clientX / window.innerWidth  - 0.5) * 40;
+      my.current = (e.clientY / window.innerHeight - 0.5) * 40;
+    };
+    let id: number;
+    const animate = () => {
+      if (b1.current) b1.current.style.transform = `translate(${mx.current * 0.5}px,${my.current * 0.5}px)`;
+      if (b2.current) b2.current.style.transform = `translate(${mx.current}px,${my.current}px)`;
+      if (b3.current) b3.current.style.transform = `translate(${mx.current * 1.5}px,${my.current * 1.5}px)`;
+      id = requestAnimationFrame(animate);
+    };
+    animate();
+    window.addEventListener('mousemove', onMouse, { passive: true });
+    return () => { cancelAnimationFrame(id); window.removeEventListener('mousemove', onMouse); };
+  }, []);
+
+  const base: React.CSSProperties = {
+    position: 'absolute', borderRadius: '50%',
+    filter: 'blur(100px)', mixBlendMode: 'soft-light',
+    pointerEvents: 'none', willChange: 'transform',
+  };
+
   return (
-    <div
-      onClick={() => window.open('https://media.sidmatrix.xyz/web/', '_blank')}
-      style={{
-        background: '#fff', borderRadius: 16, padding: '20px 24px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
-        border: '1px solid rgba(45,42,36,0.07)',
-        cursor: 'none', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        display: 'flex', alignItems: 'center', gap: 16, maxWidth: 380,
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)';
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'none';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.07)';
-      }}
-    >
-      <div style={{
-        width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-        background: 'linear-gradient(135deg, #00a4dc 0%, #0090c8 100%)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 24,
-      }}>
-        🎬
-      </div>
-      <div>
-        <p style={{ fontFamily: "'Urbanist'", fontWeight: 700, fontSize: 15, color: '#2d2a24' }}>
-          Want to watch a movie?
-        </p>
-        <p style={{ fontFamily: "'Share Tech Mono'", fontSize: 11, color: '#5f5646', marginTop: 3 }}>
-          media.sidmatrix.xyz · email for credentials
-        </p>
-      </div>
-      <span style={{ marginLeft: 'auto', fontSize: 16, color: '#dfd2bf' }}>↗</span>
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+      <div ref={b1} style={{ ...base, width: 600, height: 600, background: ORANGE,    opacity: 0.22, top: '5%',  left: '15%', animation: 'float-a 15s ease-in-out infinite' }} />
+      <div ref={b2} style={{ ...base, width: 480, height: 480, background: '#B22222', opacity: 0.18, top: '40%', right: '5%', animation: 'float-b 20s ease-in-out infinite' }} />
+      <div ref={b3} style={{ ...base, width: 380, height: 380, background: '#FF8C00', opacity: 0.15, bottom: '5%', left: '40%', animation: 'float-c 18s ease-in-out infinite' }} />
     </div>
   );
 }
 
-// ── Hooks ─────────────────────────────────────────────────────────────────────
-
-function useReveal(threshold = 0.18) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, visible };
-}
-
-// ── Particle Orb ──────────────────────────────────────────────────────────────
-
-function ParticleOrb() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Fibonacci sphere
-    const N = 280;
-    const phi = Math.PI * (3 - Math.sqrt(5));
-    const pts = Array.from({ length: N }, (_, i) => {
-      const y = 1 - (i / (N - 1)) * 2;
-      const r = Math.sqrt(Math.max(0, 1 - y * y));
-      const t = phi * i;
-      return { x: Math.cos(t) * r, y, z: Math.sin(t) * r };
-    });
-
-    let angle = 0;
-    let animId: number;
-
-    const draw = () => {
-      const dpr = window.devicePixelRatio;
-      const W = canvas.width / dpr;
-      const H = canvas.height / dpr;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      ctx.scale(dpr, dpr);
-
-      const R = Math.min(W, H) * 0.44;
-      const cx = W / 2;
-      const cy = H / 2;
-      const cosA = Math.cos(angle);
-      const sinA = Math.sin(angle);
-      // Mouse-driven tilt
-      const tiltX = (mouseRef.current.y - window.innerHeight / 2) * 0.0002;
-      const tiltY = (mouseRef.current.x - window.innerWidth / 2) * 0.0002;
-      const cosTX = Math.cos(tiltX), sinTX = Math.sin(tiltX);
-      const cosTY = Math.cos(tiltY), sinTY = Math.sin(tiltY);
-
-      const proj = pts.map(({ x, y, z }) => {
-        // Y-axis rotation
-        const rx = x * cosA - z * sinA;
-        const ry = y;
-        const rz = x * sinA + z * cosA;
-        // X-axis tilt (mouse)
-        const ry2 = ry * cosTX - rz * sinTX;
-        const rz2 = ry * sinTX + rz * cosTX;
-        // Y-axis tilt (mouse)
-        const rx2 = rx * cosTY + rz2 * sinTY;
-        const rz3 = -rx * sinTY + rz2 * cosTY;
-        const depth = (rz3 + 1.6) / 2.6;
-        return { sx: cx + rx2 * R, sy: cy + ry2 * R, depth };
-      }).sort((a, b) => a.depth - b.depth);
-
-      proj.forEach(({ sx, sy, depth }) => {
-        ctx.beginPath();
-        ctx.arc(sx, sy, depth * 2.8 + 0.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(52,191,255,${(depth * 0.75 + 0.05).toFixed(2)})`;
-        ctx.fill();
-      });
-
-      ctx.restore();
-      angle += 0.004;
-      animId = requestAnimationFrame(draw);
-    };
-
-    draw();
-    const onMouse = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
-    window.addEventListener('mousemove', onMouse);
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onMouse);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />;
-}
-
-// ── Custom Cursor ─────────────────────────────────────────────────────────────
+// ── Custom cursor ─────────────────────────────────────────────────────────────
 
 function CustomCursor() {
-  const ref = useRef<HTMLDivElement>(null);
-  const pos = useRef({ x: -100, y: -100 });
-  const target = useRef({ x: -100, y: -100 });
+  const ref  = useRef<HTMLDivElement>(null);
+  const pos  = useRef({ x: -100, y: -100 });
+  const tgt  = useRef({ x: -100, y: -100 });
+  const over = useRef(false);
 
   useEffect(() => {
     let id: number;
-    const animate = () => {
-      pos.current.x += (target.current.x - pos.current.x) * 0.14;
-      pos.current.y += (target.current.y - pos.current.y) * 0.14;
+    const tick = () => {
+      pos.current.x += (tgt.current.x - pos.current.x) * 0.14;
+      pos.current.y += (tgt.current.y - pos.current.y) * 0.14;
       if (ref.current) {
         ref.current.style.transform =
-          `translate(${pos.current.x - 10}px, ${pos.current.y - 10}px)`;
+          `translate(${pos.current.x - 6}px,${pos.current.y - 6}px) scale(${over.current ? 6 : 1})`;
       }
-      id = requestAnimationFrame(animate);
+      id = requestAnimationFrame(tick);
     };
-    animate();
-
-    const move = (e: MouseEvent) => { target.current = { x: e.clientX, y: e.clientY }; };
-    const over = (e: MouseEvent) => {
-      const t = e.target as HTMLElement;
-      if (t.closest('a,button,.project-card,.cta-pill,.cta-fill,.skill-pill'))
-        ref.current?.classList.add('hovered');
-    };
-    const out = () => ref.current?.classList.remove('hovered');
-
-    window.addEventListener('mousemove', move);
-    document.addEventListener('mouseover', over);
-    document.addEventListener('mouseout', out);
+    tick();
+    const mv = (e: MouseEvent) => { tgt.current = { x: e.clientX, y: e.clientY }; };
+    const on = (e: MouseEvent) => { over.current = !!(e.target as HTMLElement).closest('a,button,[data-cur]'); };
+    const off = () => { over.current = false; };
+    window.addEventListener('mousemove', mv, { passive: true });
+    document.addEventListener('mouseover', on);
+    document.addEventListener('mouseout', off);
     return () => {
       cancelAnimationFrame(id);
-      window.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseover', over);
-      document.removeEventListener('mouseout', out);
+      window.removeEventListener('mousemove', mv);
+      document.removeEventListener('mouseover', on);
+      document.removeEventListener('mouseout', off);
     };
   }, []);
 
-  return <div ref={ref} className="cursor-dot" />;
+  return (
+    <div ref={ref} style={{
+      position: 'fixed', top: 0, left: 0, width: 12, height: 12,
+      borderRadius: '50%', background: '#fff',
+      mixBlendMode: 'difference', pointerEvents: 'none',
+      zIndex: 99999,
+      transition: `transform 0.15s ${EASE}`,
+    }} />
+  );
+}
+
+// ── Page loader ───────────────────────────────────────────────────────────────
+
+function Loader({ onDone }: { onDone: () => void }) {
+  const [n, setN]   = useState(0);
+  const [msg, setMsg] = useState('INITIALIZING SYSTEM');
+  const [exit, setExit] = useState(false);
+  const done = useCallback(onDone, [onDone]);
+
+  useEffect(() => {
+    const msgs = ['INITIALIZING SYSTEM', 'LOADING ASSETS', 'COMPILING ROUTES', 'READY'];
+    let cur = 0;
+    const id = setInterval(() => {
+      cur += Math.floor(Math.random() * 5) + 2;
+      if (cur >= 100) {
+        cur = 100;
+        clearInterval(id);
+        setMsg('READY');
+        setTimeout(() => { setExit(true); setTimeout(done, 700); }, 300);
+      }
+      setN(cur);
+      setMsg(msgs[Math.min(Math.floor((cur / 100) * msgs.length), msgs.length - 1)]);
+    }, 28);
+    return () => clearInterval(id);
+  }, [done]);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99998,
+      background: '#080808',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      opacity: exit ? 0 : 1,
+      transition: `opacity 0.7s ${EASE}`,
+    }}>
+      {/* Glowing orb */}
+      <div style={{
+        position: 'absolute', width: 256, height: 256, borderRadius: '50%',
+        background: `radial-gradient(circle, ${ORANGE}, #B22222)`,
+        filter: 'blur(50px)', opacity: 0.65,
+        animation: 'pulse-orb 2s ease-in-out infinite',
+      }} />
+      {/* Counter */}
+      <span style={{
+        fontFamily: cab, fontWeight: 900,
+        fontSize: 'clamp(80px, 15vw, 160px)',
+        color: '#fff', letterSpacing: '-0.05em', lineHeight: 1,
+        position: 'relative', zIndex: 1,
+      }}>
+        {String(n).padStart(2, '0')}
+      </span>
+      {/* Status */}
+      <span style={{ ...monoTag(msg, 'rgba(255,255,255,0.3)'), marginTop: 24, position: 'relative', zIndex: 1 }}>
+        {msg}
+      </span>
+    </div>
+  );
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
 
-function Header() {
-  const [scrolled, setScrolled] = useState(false);
+function Header({ onMenu }: { onMenu: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: 'clamp(1.5rem,3vw,3rem)',
+    }}>
+      <span style={{ fontFamily: cab, fontWeight: 900, fontSize: 22, color: '#fff', letterSpacing: '-0.04em' }}>
+        SS.
+      </span>
+      <button
+        onClick={onMenu}
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'none' }}
+        data-cur
+      >
+        <span style={monoTag('MENU', 'rgba(255,255,255,0.4)')}>MENU</span>
+        <div style={{
+          width: 40, height: 40, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: hov ? ORANGE : 'rgba(255,255,255,0.08)',
+          border: `1px solid ${hov ? ORANGE : 'transparent'}`,
+          backdropFilter: 'blur(20px)',
+          transition: `all 0.3s ${EASE}`,
+        }}>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+            <rect y="0"   width="16" height="1.5" rx="0.75" fill="white"/>
+            <rect y="4.75" width="10" height="1.5" rx="0.75" fill="white"/>
+            <rect y="9.5"  width="16" height="1.5" rx="0.75" fill="white"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+// ── Circular nav overlay ──────────────────────────────────────────────────────
+
+const NAV_ITEMS = [
+  { label: 'HERO',    idx: 0 },
+  { label: 'ABOUT',   idx: 1 },
+  { label: 'WORK',    idx: 2 },
+  { label: 'CONTACT', idx: 3 },
+];
+
+function CircularMenu({ open, onClose, onGo }: {
+  open: boolean; onClose: () => void; onGo: (i: number) => void;
+}) {
+  const [hov, setHov] = useState<number | null>(null);
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [onClose]);
 
   return (
-    <header
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        height: 64, display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 clamp(24px, 5vw, 80px)',
-        background: scrolled ? 'rgba(241,229,213,0.9)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(223,210,191,0.6)' : 'none',
-        transition: 'background 0.4s ease, border-color 0.4s ease',
-      }}
-    >
-      {/* Logo mark */}
-      <a
-        href="#hero"
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: '#080808',
+      clipPath: open ? 'circle(150% at 95% 5%)' : 'circle(0% at 95% 5%)',
+      transition: `clip-path 0.9s ${EASE}`,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'flex-start', justifyContent: 'center',
+      padding: '0 clamp(2rem,8vw,10rem)',
+      pointerEvents: open ? 'auto' : 'none',
+    }}>
+      {/* Close */}
+      <button
+        onClick={onClose}
         style={{
-          fontFamily: "'Urbanist', sans-serif",
-          fontWeight: 900, fontSize: 20,
-          color: '#2d2a24', textDecoration: 'none',
-          letterSpacing: '-0.03em',
+          position: 'absolute', top: 'clamp(1.5rem,3vw,3rem)', right: 'clamp(1.5rem,3vw,3rem)',
+          width: 40, height: 40, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.08)', border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'none', color: '#fff', fontSize: 22, lineHeight: 1,
+          transition: `background 0.2s ${EASE}`,
         }}
+        onMouseEnter={e => (e.currentTarget.style.background = ORANGE)}
+        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+        data-cur
       >
-        SS
-      </a>
+        ×
+      </button>
 
-      {/* Right nav */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-        {['About', 'Projects', 'Contact'].map(s => (
-          <a
-            key={s}
-            href={`#${s.toLowerCase()}`}
-            className="mono-label"
-            style={{ textDecoration: 'none', color: '#5f5646', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#2d2a24')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#5f5646')}
+      {/* Links */}
+      <nav style={{ width: '100%' }}>
+        {NAV_ITEMS.map((item, i) => (
+          <div
+            key={item.label}
+            style={{
+              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              padding: '0.6rem 0',
+              opacity: open ? 1 : 0,
+              transform: open ? 'none' : 'translateY(40px)',
+              transition: `opacity 0.6s ${0.08 + i * 0.1}s ${EASE}, transform 0.6s ${0.08 + i * 0.1}s ${EASE}`,
+            }}
+            onMouseEnter={() => setHov(i)}
+            onMouseLeave={() => setHov(null)}
           >
-            {s}
+            <button
+              onClick={() => { onGo(item.idx); onClose(); }}
+              style={{
+                background: 'none', border: 'none', cursor: 'none',
+                display: 'flex', alignItems: 'center', gap: 24,
+                fontFamily: cab, fontWeight: 900,
+                fontSize: 'clamp(2.5rem,7vw,90px)',
+                letterSpacing: '-0.03em', lineHeight: 1.1,
+                color: hov === i ? ORANGE : 'transparent',
+                WebkitTextStroke: hov === i ? '0px' : '1px rgba(255,255,255,0.7)',
+                fontStyle: hov === i ? 'italic' : 'normal',
+                transform: hov === i ? 'translateX(20px)' : 'none',
+                transition: `all 0.35s ${EASE}`,
+              }}
+              data-cur
+            >
+              <span style={{ ...monoTag(`0${i + 1}`, 'rgba(255,255,255,0.2)'), fontStyle: 'normal', WebkitTextStroke: '0px' }}>
+                0{i + 1}
+              </span>
+              {item.label}
+            </button>
+          </div>
+        ))}
+      </nav>
+
+      {/* Footer socials */}
+      <div style={{
+        marginTop: 48, display: 'flex', gap: 32,
+        opacity: open ? 1 : 0,
+        transition: `opacity 0.6s 0.5s ${EASE}`,
+      }}>
+        {SOCIALS.map(s => (
+          <a key={s.label} href={s.href}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+            rel="noopener noreferrer"
+            style={{ ...monoTag(s.full, 'rgba(255,255,255,0.25)'), textDecoration: 'none', transition: `color 0.2s ${EASE}` }}
+            onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.25)')}
+            data-cur
+          >
+            {s.full}
           </a>
         ))}
-        <a href="mailto:siddhant.singh131@outlook.com" className="cta-pill" style={{ padding: '8px 20px', fontSize: 13 }}>
-          GET IN TOUCH
-        </a>
       </div>
-    </header>
+    </div>
+  );
+}
+
+// ── Section progress ──────────────────────────────────────────────────────────
+
+function SectionProgress({ cur, total }: { cur: number; total: number }) {
+  return (
+    <div style={{
+      position: 'fixed', bottom: 'clamp(1.5rem,3vw,3rem)', left: 'clamp(1.5rem,3vw,3rem)',
+      display: 'flex', alignItems: 'center', gap: 12, zIndex: 100,
+    }}>
+      <span style={{ ...monoTag(`0${cur + 1}`, ORANGE), fontSize: 12 }}>0{cur + 1}</span>
+      <div style={{ width: 48, height: 1, background: '#27272a' }} />
+      <span style={{ ...monoTag(`0${total}`, '#52525b'), fontSize: 12 }}>0{total}</span>
+    </div>
   );
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
 
-function Hero() {
+function HeroSection({ onNext }: { onNext: () => void }) {
   const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), 80); return () => clearTimeout(t); }, []);
-
-  const stagger = (word: string, baseDelay: number) =>
-    word.split('').map((ch, i) => (
-      <span
-        key={i}
-        className={`hero-letter${vis ? ' visible' : ''}`}
-        style={{ transitionDelay: `${baseDelay + i * 40}ms` }}
-      >
-        {ch}
-      </span>
-    ));
+  useEffect(() => { const t = setTimeout(() => setVis(true), 100); return () => clearTimeout(t); }, []);
 
   return (
-    <section
-      id="hero"
+    <div style={{
+      width: '100%', height: '100%', position: 'relative',
+      display: 'flex', flexDirection: 'column', justifyContent: 'center',
+      padding: 'clamp(2rem,5vw,8rem)',
+      paddingTop: 'calc(clamp(1.5rem,3vw,3rem) + 72px)',
+    }}>
+      {/* Tag */}
+      <div style={{
+        ...monoTag('// PM · BUILDER · BENGALURU, INDIA', ORANGE),
+        marginBottom: 40,
+        opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(16px)',
+        transition: `opacity 0.7s 0.1s ${EASE}, transform 0.7s 0.1s ${EASE}`,
+      }} />
+
+      {/* Title */}
+      <div style={{
+        opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(40px)',
+        transition: `opacity 0.8s 0.2s ${EASE}, transform 0.8s 0.2s ${EASE}`,
+      }}>
+        <h1 style={{ margin: 0, lineHeight: 0.88, letterSpacing: '-0.04em' }}>
+          <span style={{ display: 'block', fontFamily: cab, fontWeight: 900, fontSize: 'clamp(3.5rem,14vw,180px)', color: '#fff' }}>
+            PRODUCT
+          </span>
+          <span style={{
+            display: 'block', fontFamily: cab, fontWeight: 900,
+            fontSize: 'clamp(3.5rem,14vw,180px)',
+            color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.75)',
+            fontStyle: 'italic', position: 'relative',
+          }}>
+            MANAGER.
+            <div style={{
+              position: 'absolute', right: '0%', bottom: '-10%',
+              width: '35%', height: '120%',
+              background: `radial-gradient(circle, ${ORANGE} 0%, transparent 70%)`,
+              filter: 'blur(60px)', opacity: 0.28,
+              mixBlendMode: 'screen', pointerEvents: 'none',
+            }} />
+          </span>
+        </h1>
+      </div>
+
+      {/* Subtitle */}
+      <p style={{
+        fontFamily: sat, fontSize: '1.2rem', color: 'rgba(255,255,255,0.38)',
+        marginTop: 48, maxWidth: '28rem', lineHeight: 1.7,
+        opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
+        transition: `opacity 0.7s 0.55s ${EASE}, transform 0.7s 0.55s ${EASE}`,
+      }}>
+        Builds products that turn enterprise chaos into clarity. 1,000+ incidents resolved. 4 tools shipped. Real infrastructure, real research.
+      </p>
+
+      {/* CTA */}
+      <button
+        onClick={onNext}
+        style={{
+          marginTop: 56, display: 'flex', alignItems: 'center', gap: 16,
+          background: 'none', border: 'none', cursor: 'none', padding: 0,
+          opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(16px)',
+          transition: `opacity 0.7s 0.7s ${EASE}, transform 0.7s 0.7s ${EASE}`,
+        }}
+        data-cur
+      >
+        <ArrowCircle />
+        <span style={monoTag('SCROLL OR NAVIGATE', 'rgba(255,255,255,0.28)')}>SCROLL OR NAVIGATE</span>
+      </button>
+    </div>
+  );
+}
+
+function ArrowCircle() {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center',
-        padding: '80px clamp(24px, 5vw, 80px) 0',
-        position: 'relative', overflow: 'hidden',
+        width: 48, height: 48, borderRadius: '50%',
+        border: `1px solid ${hov ? ORANGE : 'rgba(255,255,255,0.15)'}`,
+        background: hov ? `rgba(255,77,0,0.1)` : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: `all 0.3s ${EASE}`, flexShrink: 0,
       }}
     >
-      {/* Left: text */}
-      <div style={{ flex: '0 0 55%', zIndex: 2, paddingTop: 40 }}>
-        <p
-          className="mono-label"
-          style={{
-            marginBottom: 24, color: '#34bfff',
-            opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
-            transition: 'opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s',
-          }}
-        >
-          // PM · Builder · Bengaluru, India
-        </p>
-
-        <h1
-          style={{
-            fontFamily: "'Urbanist', sans-serif",
-            fontWeight: 900,
-            fontSize: 'clamp(64px, 9vw, 112px)',
-            lineHeight: 0.95,
-            letterSpacing: '-0.04em',
-            color: '#2d2a24',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ display: 'block', overflow: 'hidden' }}>
-            {stagger('SIDDHANT', 200)}
-          </div>
-          <div style={{ display: 'block', overflow: 'hidden', color: '#34bfff' }}>
-            {stagger('SINGH', 600)}
-          </div>
-        </h1>
-
-        <p
-          style={{
-            marginTop: 36, fontSize: 18, color: '#5f5646', maxWidth: 440, lineHeight: 1.6,
-            opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
-            transition: 'opacity 0.6s ease 1s, transform 0.6s ease 1s',
-          }}
-        >
-          Builds products that turn enterprise chaos into clarity — from 1,000+ production incidents to shipped tools people actually use.
-        </p>
-
-        <div
-          style={{
-            marginTop: 40, display: 'flex', gap: 16, flexWrap: 'wrap',
-            opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(20px)',
-            transition: 'opacity 0.6s ease 1.2s, transform 0.6s ease 1.2s',
-          }}
-        >
-          <a href="#projects" className="cta-pill">View Work</a>
-          <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="cta-pill">
-            Resume ↗
-          </a>
-        </div>
-
-        {/* Scroll indicator */}
-        <div
-          style={{
-            marginTop: 80, display: 'flex', alignItems: 'center', gap: 12,
-            opacity: vis ? 0.5 : 0,
-            transition: 'opacity 0.6s ease 1.5s',
-          }}
-        >
-          <div style={{
-            width: 1, height: 48,
-            background: 'linear-gradient(to bottom, #5f5646, transparent)',
-          }} />
-          <span className="mono-label">scroll</span>
-        </div>
-      </div>
-
-      {/* Right: Particle orb */}
-      <div
-        style={{
-          position: 'absolute', right: 0, top: 0, bottom: 0,
-          width: '48%', pointerEvents: 'none',
-        }}
-      >
-        <ParticleOrb />
-      </div>
-    </section>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2v12M2 8l6 6 6-6" stroke={hov ? ORANGE : 'rgba(255,255,255,0.55)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
   );
 }
 
 // ── About ─────────────────────────────────────────────────────────────────────
 
-function About() {
-  const { ref, visible } = useReveal();
+const STATS = [
+  { val: '1,000+', label: 'Enterprise Incidents' },
+  { val: '4',      label: 'Shipped Products'     },
+  { val: '3.5 YRS', label: 'At Dell'             },
+  { val: '$0/MO',  label: 'Homelab Cost'         },
+];
 
+function AboutSection() {
   return (
-    <section id="about" ref={ref} style={{ padding: '120px clamp(24px, 5vw, 80px)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
-        {/* Left */}
-        <div>
-          <p className={`mono-label reveal${visible ? ' visible' : ''}`}>
-            // About
-          </p>
-          <h2
-            className={`reveal reveal-delay-1${visible ? ' visible' : ''}`}
-            style={{
-              fontFamily: "'Urbanist', sans-serif",
-              fontWeight: 900,
-              fontSize: 'clamp(44px, 5vw, 72px)',
-              lineHeight: 1,
-              letterSpacing: '-0.04em',
-              color: '#2d2a24',
-              marginTop: 16,
-            }}
-          >
-            Siddhant<br />
-            <span style={{ color: '#34bfff' }}>Singh.</span>
-          </h2>
-          <p
-            className={`mono-label reveal reveal-delay-2${visible ? ' visible' : ''}`}
-            style={{ marginTop: 20, color: '#34bfff' }}
-          >
-            // Bengaluru, India · Dell Technologies
-          </p>
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4vw', alignItems: 'center',
+      padding: 'clamp(2rem,5vw,8rem)',
+      paddingTop: 'calc(clamp(1.5rem,3vw,3rem) + 72px)',
+      overflowY: 'auto',
+    }}>
+      {/* Left */}
+      <div>
+        <div style={{ ...monoTag('// ABOUT', ORANGE), marginBottom: 32 }} />
+        <h2 style={{ margin: 0, lineHeight: 0.88, letterSpacing: '-0.04em' }}>
+          <span style={{ display: 'block', fontFamily: cab, fontWeight: 900, fontSize: 'clamp(2.5rem,7vw,86px)', color: '#fff' }}>
+            TSE WHO
+          </span>
+          <span style={{
+            display: 'block', fontFamily: cab, fontWeight: 900,
+            fontSize: 'clamp(2.5rem,7vw,86px)',
+            color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.75)',
+            fontStyle: 'italic',
+          }}>
+            BUILDS.
+          </span>
+        </h2>
+        <p style={{
+          fontFamily: sat, fontSize: '1.05rem', lineHeight: 1.78,
+          color: 'rgba(255,255,255,0.42)', marginTop: 28, marginBottom: 48,
+        }}>
+          3.5 years resolving 1,000+ enterprise S1/S2 production incidents at Dell — product failure from the customer's side, under pressure, in real time. Then I built the tools that should've existed: a RAG chatbot, a Windows display manager, a 19-container homelab, and PM teardowns. NextLeap PM Fellowship formalised the product thinking.
+        </p>
 
-          <p
-            className={`reveal reveal-delay-3${visible ? ' visible' : ''}`}
-            style={{ marginTop: 32, color: '#5f5646', lineHeight: 1.7, fontSize: 15 }}
-          >
-            3.5 years resolving 1,000+ enterprise production incidents (S1/S2) at Dell. I learned product failure from the customer's side — under pressure, in real time. Then I built the tools that should've existed: a RAG chatbot, a Windows display manager, a 19-container homelab, PM teardowns. The NextLeap PM Fellowship is where the product thinking got formalised.
-          </p>
-        </div>
-
-        {/* Right: skills */}
-        <div>
-          <p className={`mono-label reveal${visible ? ' visible' : ''}`}>
-            // Skills
-          </p>
-          <div
-            className={`reveal reveal-delay-1${visible ? ' visible' : ''}`}
-            style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 10 }}
-          >
-            {SKILLS.map((s, i) => (
-              <span
-                key={s}
-                className="skill-pill"
-                style={{ transitionDelay: `${0.1 + i * 0.05}s` }}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div
-            className={`reveal reveal-delay-3${visible ? ' visible' : ''}`}
-            style={{ marginTop: 56, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}
-          >
-            {[
-              { val: '1,000+', label: 'Enterprise incidents resolved' },
-              { val: '4', label: 'Shipped products' },
-              { val: '3.5 yrs', label: 'At Dell Technologies' },
-              { val: '$0/mo', label: '19-container homelab cost' },
-            ].map(({ val, label }) => (
-              <div key={label}>
-                <p style={{
-                  fontFamily: "'Urbanist', sans-serif",
-                  fontWeight: 900,
-                  fontSize: 40,
-                  letterSpacing: '-0.04em',
-                  color: '#2d2a24',
-                  lineHeight: 1,
-                }}>
-                  {val}
-                </p>
-                <p className="mono-label" style={{ marginTop: 6 }}>{label}</p>
-              </div>
-            ))}
-          </div>
+        {/* Stats grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+          {STATS.map(({ val, label }) => (
+            <div key={label} style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
+              <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(1.5rem,3vw,38px)', color: '#fff', letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>
+                {val}
+              </p>
+              <p style={{ ...monoTag(label, 'rgba(255,255,255,0.22)'), marginTop: 6 }}>{label}</p>
+            </div>
+          ))}
         </div>
       </div>
-    </section>
+
+      {/* Right — styled container */}
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          aspectRatio: '4/5', borderRadius: '2rem',
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 50%, #080808 100%)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden', position: 'relative',
+        }}>
+          <span style={{
+            fontFamily: cab, fontWeight: 900,
+            fontSize: 'clamp(4rem,10vw,120px)',
+            color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.08)',
+            letterSpacing: '-0.04em', position: 'relative', zIndex: 1,
+          }}>SS</span>
+          <p style={{ ...monoTag('SIDDHANT SINGH', 'rgba(255,255,255,0.14)'), marginTop: 16, position: 'relative', zIndex: 1 }}>SIDDHANT SINGH</p>
+          <p style={{ ...monoTag('PRODUCT · BUILDER', ORANGE), marginTop: 8, opacity: 0.8, position: 'relative', zIndex: 1 }}>PRODUCT · BUILDER</p>
+          {/* Inner glow */}
+          <div style={{
+            position: 'absolute', bottom: '-20%', right: '-20%',
+            width: '70%', height: '70%',
+            background: `radial-gradient(circle, ${ORANGE}, transparent 70%)`,
+            filter: 'blur(40px)', opacity: 0.25,
+          }} />
+        </div>
+        {/* Outer accent glow */}
+        <div style={{
+          position: 'absolute', bottom: '-10%', right: '-10%',
+          width: '55%', height: '55%',
+          background: ORANGE, filter: 'blur(80px)',
+          opacity: 0.12, borderRadius: '50%', zIndex: -1,
+        }} />
+      </div>
+    </div>
   );
 }
 
-// ── Projects ──────────────────────────────────────────────────────────────────
+// ── Work ──────────────────────────────────────────────────────────────────────
 
-function Projects() {
-  const { ref, visible } = useReveal();
+function WorkSection() {
+  const [hov, setHov] = useState<string | null>(null);
 
   return (
-    <section id="projects" ref={ref} style={{ padding: '40px clamp(24px, 5vw, 80px) 120px' }}>
-      <div className={`reveal${visible ? ' visible' : ''}`}>
-        <p className="mono-label">// Selected</p>
-        <h2
-          style={{
-            fontFamily: "'Urbanist', sans-serif",
-            fontWeight: 900,
-            fontSize: 'clamp(56px, 8vw, 96px)',
-            letterSpacing: '-0.04em',
-            lineHeight: 1,
-            color: '#2d2a24',
-            marginTop: 8, marginBottom: 16,
-          }}
-        >
-          Projects
+    <div style={{
+      width: '100%', height: '100%', position: 'relative',
+      padding: 'clamp(2rem,5vw,8rem)',
+      paddingTop: 'calc(clamp(1.5rem,3vw,3rem) + 72px)',
+      overflowY: 'auto',
+    }}>
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ ...monoTag('// SELECTED WORK', ORANGE), marginBottom: 16 }} />
+        <h2 style={{
+          fontFamily: cab, fontWeight: 900,
+          fontSize: 'clamp(3rem,9vw,112px)',
+          color: '#fff', letterSpacing: '-0.04em', lineHeight: 0.88, margin: 0,
+        }}>
+          PROJECTS
         </h2>
       </div>
 
-      <div style={{ borderBottom: '1px solid #dfd2bf' }}>
-        {PROJECTS.map((p, i) => (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 14 }}>
+        {PROJECTS.map(p => (
           <a
             key={p.id}
             href={p.href}
             target={p.href.startsWith('http') ? '_blank' : undefined}
-            rel={p.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-            className={`project-card reveal reveal-delay-${Math.min(i + 1, 5)}${visible ? ' visible' : ''}`}
-            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 24 }}
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+            onMouseEnter={() => setHov(p.id)}
+            onMouseLeave={() => setHov(null)}
+            data-cur
           >
-            <span className="project-card-num">{String(i + 1).padStart(2, '0')}</span>
-            <div style={{ flex: 1 }}>
-              <p className="project-card-name">{p.name}</p>
-              <p className="project-card-sub" style={{ marginTop: 4 }}>{p.sub}</p>
+            <div style={{
+              aspectRatio: '16/9', borderRadius: '1.5rem',
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: p.bg, position: 'relative', overflow: 'hidden',
+              transition: `transform 0.4s ${EASE}, box-shadow 0.4s ${EASE}`,
+              transform: hov === p.id ? 'translateY(-4px)' : 'none',
+              boxShadow: hov === p.id ? '0 24px 64px rgba(0,0,0,0.5)' : 'none',
+            }}>
+              {/* Accent bottom gradient */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
+                background: `linear-gradient(to top, ${p.accent}28, transparent)`,
+                pointerEvents: 'none',
+              }} />
+
+              {/* Default state */}
+              <div style={{
+                position: 'absolute', inset: 0, padding: 20,
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                opacity: hov === p.id ? 0 : 1,
+                transition: `opacity 0.25s ${EASE}`,
+                pointerEvents: 'none',
+              }}>
+                <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(0.9rem,1.4vw,18px)', color: 'rgba(255,255,255,0.65)', margin: 0, letterSpacing: '-0.02em' }}>
+                  {p.name}
+                </p>
+                <p style={{ ...monoTag(p.cat, p.accent), marginTop: 4 }}>{p.cat}</p>
+              </div>
+
+              {/* Hover overlay */}
+              <div style={{
+                position: 'absolute', inset: 0, padding: 20,
+                background: 'rgba(0,0,0,0.55)',
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                opacity: hov === p.id ? 1 : 0,
+                transition: `opacity 0.28s ${EASE}`,
+                pointerEvents: 'none',
+              }}>
+                <p style={{ ...monoTag(p.cat, ORANGE), marginBottom: 8 }}>{p.cat}</p>
+                <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(1rem,1.8vw,22px)', color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
+                  {p.name}
+                </p>
+                <p style={{ fontFamily: sat, fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0, marginTop: 6 }}>
+                  {p.sub}
+                </p>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-              {p.tags.map(t => (
-                <span
-                  key={t}
-                  className="mono-label"
-                  style={{
-                    background: 'rgba(52,191,255,0.08)',
-                    border: '1px solid rgba(52,191,255,0.2)',
-                    borderRadius: 4,
-                    padding: '4px 10px',
-                  }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-            <span className="project-card-arrow">↗</span>
           </a>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
 // ── Contact ───────────────────────────────────────────────────────────────────
 
-function Contact() {
-  const { ref, visible } = useReveal();
+function ContactSection() {
+  const [hov, setHov] = useState(false);
 
   return (
-    <section
-      id="contact"
-      ref={ref}
-      style={{ padding: '120px clamp(24px, 5vw, 80px)', textAlign: 'left' }}
-    >
-      <p className={`mono-label reveal${visible ? ' visible' : ''}`}>// Contact</p>
-      <h2
-        className={`reveal reveal-delay-1${visible ? ' visible' : ''}`}
-        style={{
-          fontFamily: "'Urbanist', sans-serif",
-          fontWeight: 900,
-          fontSize: 'clamp(56px, 8vw, 100px)',
-          letterSpacing: '-0.04em',
-          lineHeight: 0.95,
-          color: '#2d2a24',
-          marginTop: 16,
-        }}
-      >
-        Let's work<br />
-        <span style={{ paddingLeft: 'clamp(24px, 4vw, 80px)' }}>together.</span>
-      </h2>
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+      padding: 'clamp(2rem,5vw,8rem)',
+      paddingTop: 'calc(clamp(1.5rem,3vw,3rem) + 72px)',
+      position: 'relative',
+    }}>
+      <div style={{ ...monoTag('// GET IN TOUCH', ORANGE), marginBottom: 40 }} />
 
-      <div
-        className={`reveal reveal-delay-2${visible ? ' visible' : ''}`}
-        style={{ marginTop: 56, display: 'flex', flexDirection: 'column', gap: 24 }}
+      {/* Hero CTA text */}
+      <a
+        href="mailto:siddhant.singh131@outlook.com"
+        style={{ textDecoration: 'none', lineHeight: 0.88, letterSpacing: '-0.04em' }}
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        data-cur
       >
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-          <a
-            href="mailto:siddhant.singh131@outlook.com"
-            className="cta-fill"
-            onClick={e => {
-              // Fallback: copy email if mailto doesn't open
-              e.preventDefault();
-              window.location.href = 'mailto:siddhant.singh131@outlook.com';
-            }}
+        <div style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(3rem,10vw,120px)', color: '#fff' }}>
+          LET'S
+        </div>
+        <div style={{
+          fontFamily: cab, fontWeight: 900, fontSize: 'clamp(3rem,10vw,120px)',
+          fontStyle: 'italic',
+          color: hov ? ORANGE : 'transparent',
+          WebkitTextStroke: hov ? '0px' : '1px rgba(255,255,255,0.75)',
+          transition: `color 0.4s ${EASE}, -webkit-text-stroke 0.4s ${EASE}`,
+        }}>
+          BUILD.
+        </div>
+      </a>
+
+      {/* Email */}
+      <a
+        href="mailto:siddhant.singh131@outlook.com"
+        style={{
+          ...monoTag('SIDDHANT.SINGH131@OUTLOOK.COM', 'rgba(255,255,255,0.28)'),
+          fontSize: 11, textDecoration: 'none',
+          marginTop: 40, transition: `color 0.2s ${EASE}`,
+        }}
+        onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
+        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.28)')}
+        data-cur
+      >
+        SIDDHANT.SINGH131@OUTLOOK.COM
+      </a>
+
+      {/* Social circles */}
+      <div style={{ display: 'flex', gap: 16, marginTop: 48 }}>
+        {SOCIALS.map(s => (
+          <a key={s.label} href={s.href}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+            data-cur
           >
-            siddhant.singh131@outlook.com ↗
-          </a>
-          <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="cta-pill">
-            Resume ↗
-          </a>
-        </div>
-        <JellyfinCard />
-      </div>
-    </section>
-  );
-}
-
-// ── Footer ────────────────────────────────────────────────────────────────────
-
-function Footer() {
-  return (
-    <footer style={{ background: '#f5efe6', borderTop: '1px solid #e8ddd0' }}>
-      <div
-        style={{
-          maxWidth: 1280, margin: '0 auto',
-          padding: '40px clamp(24px, 5vw, 80px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: 16,
-        }}
-      >
-        <div style={{ display: 'flex', gap: 32 }}>
-          {[
-            { label: 'LinkedIn', href: 'https://linkedin.com/in/siddhant-singh-3b58681a7' },
-            { label: 'GitHub', href: 'https://github.com/Sid-131' },
-            { label: 'Email', href: 'mailto:siddhant.singh131@outlook.com' },
-          ].map(l => (
-            <a
-              key={l.label}
-              href={l.href}
-              target={l.href.startsWith('http') ? '_blank' : undefined}
-              rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              className="mono-label"
-              style={{ textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#2d2a24')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#5f5646')}
+            <div
+              style={{
+                width: 64, height: 64, borderRadius: '50%',
+                border: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: `all 0.3s ${EASE}`,
+              }}
+              onMouseEnter={e => {
+                const d = e.currentTarget as HTMLDivElement;
+                d.style.background = '#fff'; d.style.borderColor = '#fff';
+                (d.querySelector('span') as HTMLElement).style.color = '#080808';
+              }}
+              onMouseLeave={e => {
+                const d = e.currentTarget as HTMLDivElement;
+                d.style.background = 'transparent'; d.style.borderColor = 'rgba(255,255,255,0.1)';
+                (d.querySelector('span') as HTMLElement).style.color = 'rgba(255,255,255,0.5)';
+              }}
             >
-              {l.label}
-            </a>
-          ))}
-        </div>
-
-        <p className="mono-label">© 2026 Siddhant Singh. All rights reserved.</p>
-
-        <p className="mono-label" style={{ color: '#34bfff' }}>
-          PM · Builder · Bengaluru
-        </p>
+              <span style={{ ...monoTag(s.label, 'rgba(255,255,255,0.5)'), fontSize: 11, transition: `color 0.3s ${EASE}` }}>
+                {s.label}
+              </span>
+            </div>
+          </a>
+        ))}
       </div>
-    </footer>
+
+      {/* Footer line */}
+      <div style={{
+        position: 'absolute', bottom: 'clamp(1.5rem,3vw,3rem)',
+        display: 'flex', gap: 24, alignItems: 'center',
+        ...monoTag('', 'rgba(255,255,255,0.18)'), fontSize: 10, letterSpacing: '0.3em',
+      }}>
+        {['© 2026 SIDDHANT SINGH', 'PM · BUILDER · BENGALURU'].map((t, i) => (
+          <span key={i} style={{ color: 'rgba(255,255,255,0.18)' }}>{t}</span>
+        ))}
+        <a href="/resume.pdf" target="_blank" style={{ color: 'rgba(255,255,255,0.18)', textDecoration: 'none', transition: `color 0.2s` }}
+          onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.18)')}
+          data-cur>
+          RESUME ↗
+        </a>
+      </div>
+    </div>
   );
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
+const TOTAL = 4;
+
 export default function App() {
+  const [loaded,  setLoaded]  = useState(false);
+  const [section, setSection] = useState(0);
+  const [menuOpen, setMenu]   = useState(false);
+  const lastScroll = useRef(0);
+
+  // Scroll to navigate
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (menuOpen) return;
+      const now = Date.now();
+      if (now - lastScroll.current < 900) return;
+      lastScroll.current = now;
+      if (e.deltaY > 30)  setSection(p => Math.min(p + 1, TOTAL - 1));
+      if (e.deltaY < -30) setSection(p => Math.max(p - 1, 0));
+    };
+    window.addEventListener('wheel', onWheel, { passive: true });
+    return () => window.removeEventListener('wheel', onWheel);
+  }, [menuOpen]);
+
+  // Keyboard
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (menuOpen) return;
+      if (e.key === 'ArrowDown'  || e.key === 'ArrowRight') setSection(p => Math.min(p + 1, TOTAL - 1));
+      if (e.key === 'ArrowUp'    || e.key === 'ArrowLeft')  setSection(p => Math.max(p - 1, 0));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  const SECTIONS = [
+    <HeroSection    key="hero"    onNext={() => setSection(1)} />,
+    <AboutSection   key="about" />,
+    <WorkSection    key="work"  />,
+    <ContactSection key="contact" />,
+  ];
+
   return (
-    <div style={{ background: '#f1e5d5', maxWidth: '100vw' }}>
+    <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#080808', overflow: 'hidden' }}>
       <CustomCursor />
-      <Header />
-      <Hero />
-      <SnakeGame />
-      <About />
-      <Projects />
-      <Contact />
-      <Footer />
+      <GrainOverlay />
+      <MeshBlobs />
+
+      {!loaded && <Loader onDone={() => setLoaded(true)} />}
+
+      <Header onMenu={() => setMenu(true)} />
+
+      <CircularMenu
+        open={menuOpen}
+        onClose={() => setMenu(false)}
+        onGo={i => setSection(i)}
+      />
+
+      {/* Sections */}
+      <div style={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
+        {SECTIONS.map((s, i) => (
+          <div
+            key={i}
+            style={{
+              position: 'absolute', inset: 0,
+              opacity: section === i ? 1 : 0,
+              transform: section === i ? 'scale(1)' : section > i ? 'scale(0.94)' : 'scale(1.03)',
+              transition: `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`,
+              pointerEvents: section === i ? 'auto' : 'none',
+              overflowY: (i === 2 || i === 1) ? 'auto' : 'hidden',
+            }}
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+
+      {loaded && <SectionProgress cur={section} total={TOTAL} />}
     </div>
   );
 }
