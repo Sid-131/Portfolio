@@ -20,10 +20,8 @@ const SOCIALS = [
   { label: 'EM', full: 'Email',    href: 'mailto:siddhant.singh131@outlook.com' },
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-const cab = "'Cabinet Grotesk', ui-sans-serif, sans-serif";
-const sat = "'Satoshi', ui-sans-serif, sans-serif";
+const cab  = "'Cabinet Grotesk', ui-sans-serif, sans-serif";
+const sat  = "'Satoshi', ui-sans-serif, sans-serif";
 const mono = "'JetBrains Mono', ui-monospace, monospace";
 
 function monoTag(_text: string, color = 'rgba(255,255,255,0.3)'): React.CSSProperties {
@@ -108,8 +106,8 @@ function CustomCursor() {
       id = requestAnimationFrame(tick);
     };
     tick();
-    const mv = (e: MouseEvent) => { tgt.current = { x: e.clientX, y: e.clientY }; };
-    const on = (e: MouseEvent) => { over.current = !!(e.target as HTMLElement).closest('a,button,[data-cur]'); };
+    const mv  = (e: MouseEvent) => { tgt.current = { x: e.clientX, y: e.clientY }; };
+    const on  = (e: MouseEvent) => { over.current = !!(e.target as HTMLElement).closest('a,button,[data-cur]'); };
     const off = () => { over.current = false; };
     window.addEventListener('mousemove', mv, { passive: true });
     document.addEventListener('mouseover', on);
@@ -136,8 +134,8 @@ function CustomCursor() {
 // ── Page loader ───────────────────────────────────────────────────────────────
 
 function Loader({ onDone }: { onDone: () => void }) {
-  const [n, setN]   = useState(0);
-  const [msg, setMsg] = useState('INITIALIZING SYSTEM');
+  const [n, setN]       = useState(0);
+  const [msg, setMsg]   = useState('INITIALIZING SYSTEM');
   const [exit, setExit] = useState(false);
   const done = useCallback(onDone, [onDone]);
 
@@ -166,14 +164,12 @@ function Loader({ onDone }: { onDone: () => void }) {
       opacity: exit ? 0 : 1,
       transition: `opacity 0.7s ${EASE}`,
     }}>
-      {/* Glowing orb */}
       <div style={{
         position: 'absolute', width: 256, height: 256, borderRadius: '50%',
         background: `radial-gradient(circle, ${ORANGE}, #B22222)`,
         filter: 'blur(50px)', opacity: 0.65,
         animation: 'pulse-orb 2s ease-in-out infinite',
       }} />
-      {/* Counter */}
       <span style={{
         fontFamily: cab, fontWeight: 900,
         fontSize: 'clamp(80px, 15vw, 160px)',
@@ -182,7 +178,6 @@ function Loader({ onDone }: { onDone: () => void }) {
       }}>
         {String(n).padStart(2, '0')}
       </span>
-      {/* Status */}
       <span style={{ ...monoTag(msg, 'rgba(255,255,255,0.3)'), marginTop: 24, position: 'relative', zIndex: 1 }}>
         {msg}
       </span>
@@ -220,7 +215,7 @@ function Header({ onMenu }: { onMenu: () => void }) {
           transition: `all 0.3s ${EASE}`,
         }}>
           <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
-            <rect y="0"   width="16" height="1.5" rx="0.75" fill="white"/>
+            <rect y="0"    width="16" height="1.5" rx="0.75" fill="white"/>
             <rect y="4.75" width="10" height="1.5" rx="0.75" fill="white"/>
             <rect y="9.5"  width="16" height="1.5" rx="0.75" fill="white"/>
           </svg>
@@ -261,7 +256,6 @@ function CircularMenu({ open, onClose, onGo }: {
       padding: '0 clamp(2rem,8vw,10rem)',
       pointerEvents: open ? 'auto' : 'none',
     }}>
-      {/* Close */}
       <button
         onClick={onClose}
         style={{
@@ -275,11 +269,8 @@ function CircularMenu({ open, onClose, onGo }: {
         onMouseEnter={e => (e.currentTarget.style.background = ORANGE)}
         onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
         data-cur
-      >
-        ×
-      </button>
+      >×</button>
 
-      {/* Links */}
       <nav style={{ width: '100%' }}>
         {NAV_ITEMS.map((item, i) => (
           <div
@@ -319,7 +310,6 @@ function CircularMenu({ open, onClose, onGo }: {
         ))}
       </nav>
 
-      {/* Footer socials */}
       <div style={{
         marginTop: 48, display: 'flex', gap: 32,
         opacity: open ? 1 : 0,
@@ -370,7 +360,6 @@ function HeroSection({ onNext }: { onNext: () => void }) {
       padding: 'clamp(2rem,5vw,8rem)',
       paddingTop: 'calc(clamp(1.5rem,3vw,3rem) + 72px)',
     }}>
-      {/* Tag */}
       <div style={{
         ...monoTag('// PM · BUILDER · BENGALURU, INDIA', ORANGE),
         marginBottom: 40,
@@ -378,7 +367,6 @@ function HeroSection({ onNext }: { onNext: () => void }) {
         transition: `opacity 0.7s 0.1s ${EASE}, transform 0.7s 0.1s ${EASE}`,
       }} />
 
-      {/* Title */}
       <div style={{
         opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(40px)',
         transition: `opacity 0.8s 0.2s ${EASE}, transform 0.8s 0.2s ${EASE}`,
@@ -405,7 +393,6 @@ function HeroSection({ onNext }: { onNext: () => void }) {
         </h1>
       </div>
 
-      {/* Subtitle */}
       <p style={{
         fontFamily: sat, fontSize: '1.2rem', color: 'rgba(255,255,255,0.38)',
         marginTop: 48, maxWidth: '28rem', lineHeight: 1.7,
@@ -415,7 +402,6 @@ function HeroSection({ onNext }: { onNext: () => void }) {
         Builds products that turn enterprise chaos into clarity. 1,000+ incidents resolved. 4 tools shipped. Real infrastructure, real research.
       </p>
 
-      {/* CTA */}
       <button
         onClick={onNext}
         style={{
@@ -495,7 +481,6 @@ function AboutSection() {
           3.5 years resolving 1,000+ enterprise S1/S2 production incidents at Dell — product failure from the customer's side, under pressure, in real time. Then I built the tools that should've existed: a RAG chatbot, a Windows display manager, a 19-container homelab, and PM teardowns. NextLeap PM Fellowship formalised the product thinking.
         </p>
 
-        {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           {STATS.map(({ val, label }) => (
             <div key={label} style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
@@ -508,38 +493,44 @@ function AboutSection() {
         </div>
       </div>
 
-      {/* Right — styled container */}
+      {/* Right — photo */}
       <div style={{ position: 'relative' }}>
         <div style={{
           aspectRatio: '4/5', borderRadius: '2rem',
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 50%, #080808 100%)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
+          border: '1px solid rgba(255,255,255,0.08)',
           overflow: 'hidden', position: 'relative',
+          background: '#111',
         }}>
-          <span style={{
-            fontFamily: cab, fontWeight: 900,
-            fontSize: 'clamp(4rem,10vw,120px)',
-            color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.08)',
-            letterSpacing: '-0.04em', position: 'relative', zIndex: 1,
-          }}>SS</span>
-          <p style={{ ...monoTag('SIDDHANT SINGH', 'rgba(255,255,255,0.14)'), marginTop: 16, position: 'relative', zIndex: 1 }}>SIDDHANT SINGH</p>
-          <p style={{ ...monoTag('PRODUCT · BUILDER', ORANGE), marginTop: 8, opacity: 0.8, position: 'relative', zIndex: 1 }}>PRODUCT · BUILDER</p>
+          <img
+            src="/avatar.jpg"
+            alt="Siddhant Singh"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
+          />
+          {/* Bottom gradient */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%',
+            background: 'linear-gradient(to top, rgba(8,8,8,0.85), transparent)',
+            pointerEvents: 'none',
+          }} />
+          {/* Name tag */}
+          <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <p style={{ ...monoTag('SIDDHANT SINGH', 'rgba(255,255,255,0.7)'), margin: 0 }}>SIDDHANT SINGH</p>
+            <p style={{ ...monoTag('PRODUCT · BUILDER', ORANGE), margin: 0, opacity: 0.9 }}>PRODUCT · BUILDER</p>
+          </div>
           {/* Inner glow */}
           <div style={{
             position: 'absolute', bottom: '-20%', right: '-20%',
             width: '70%', height: '70%',
             background: `radial-gradient(circle, ${ORANGE}, transparent 70%)`,
-            filter: 'blur(40px)', opacity: 0.25,
+            filter: 'blur(40px)', opacity: 0.15, pointerEvents: 'none',
           }} />
         </div>
-        {/* Outer accent glow */}
+        {/* Outer glow */}
         <div style={{
           position: 'absolute', bottom: '-10%', right: '-10%',
           width: '55%', height: '55%',
           background: ORANGE, filter: 'blur(80px)',
-          opacity: 0.12, borderRadius: '50%', zIndex: -1,
+          opacity: 0.1, borderRadius: '50%', zIndex: -1,
         }} />
       </div>
     </div>
@@ -589,43 +580,30 @@ function WorkSection() {
               transform: hov === p.id ? 'translateY(-4px)' : 'none',
               boxShadow: hov === p.id ? '0 24px 64px rgba(0,0,0,0.5)' : 'none',
             }}>
-              {/* Accent bottom gradient */}
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
                 background: `linear-gradient(to top, ${p.accent}28, transparent)`,
                 pointerEvents: 'none',
               }} />
-
-              {/* Default state */}
               <div style={{
                 position: 'absolute', inset: 0, padding: 20,
                 display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
                 opacity: hov === p.id ? 0 : 1,
-                transition: `opacity 0.25s ${EASE}`,
-                pointerEvents: 'none',
+                transition: `opacity 0.25s ${EASE}`, pointerEvents: 'none',
               }}>
-                <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(0.9rem,1.4vw,18px)', color: 'rgba(255,255,255,0.65)', margin: 0, letterSpacing: '-0.02em' }}>
-                  {p.name}
-                </p>
+                <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(0.9rem,1.4vw,18px)', color: 'rgba(255,255,255,0.65)', margin: 0, letterSpacing: '-0.02em' }}>{p.name}</p>
                 <p style={{ ...monoTag(p.cat, p.accent), marginTop: 4 }}>{p.cat}</p>
               </div>
-
-              {/* Hover overlay */}
               <div style={{
                 position: 'absolute', inset: 0, padding: 20,
                 background: 'rgba(0,0,0,0.55)',
                 display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
                 opacity: hov === p.id ? 1 : 0,
-                transition: `opacity 0.28s ${EASE}`,
-                pointerEvents: 'none',
+                transition: `opacity 0.28s ${EASE}`, pointerEvents: 'none',
               }}>
                 <p style={{ ...monoTag(p.cat, ORANGE), marginBottom: 8 }}>{p.cat}</p>
-                <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(1rem,1.8vw,22px)', color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
-                  {p.name}
-                </p>
-                <p style={{ fontFamily: sat, fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0, marginTop: 6 }}>
-                  {p.sub}
-                </p>
+                <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 'clamp(1rem,1.8vw,22px)', color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>{p.name}</p>
+                <p style={{ fontFamily: sat, fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0, marginTop: 6 }}>{p.sub}</p>
               </div>
             </div>
           </a>
@@ -651,7 +629,6 @@ function ContactSection({ onSnake }: { onSnake: () => void }) {
     }}>
       <div style={{ ...monoTag('// GET IN TOUCH', ORANGE), marginBottom: 40 }} />
 
-      {/* Hero CTA text */}
       <a
         href="mailto:siddhant.singh131@outlook.com"
         style={{ textDecoration: 'none', lineHeight: 0.88, letterSpacing: '-0.04em' }}
@@ -673,14 +650,9 @@ function ContactSection({ onSnake }: { onSnake: () => void }) {
         </div>
       </a>
 
-      {/* Email */}
       <a
         href="mailto:siddhant.singh131@outlook.com"
-        style={{
-          ...monoTag('SIDDHANT.SINGH131@OUTLOOK.COM', 'rgba(255,255,255,0.28)'),
-          fontSize: 11, textDecoration: 'none',
-          marginTop: 40, transition: `color 0.2s ${EASE}`,
-        }}
+        style={{ ...monoTag('SIDDHANT.SINGH131@OUTLOOK.COM', 'rgba(255,255,255,0.28)'), fontSize: 11, textDecoration: 'none', marginTop: 40, transition: `color 0.2s ${EASE}` }}
         onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
         onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.28)')}
         data-cur
@@ -688,7 +660,6 @@ function ContactSection({ onSnake }: { onSnake: () => void }) {
         SIDDHANT.SINGH131@OUTLOOK.COM
       </a>
 
-      {/* Social circles */}
       <div style={{ display: 'flex', gap: 16, marginTop: 48 }}>
         {SOCIALS.map(s => (
           <a key={s.label} href={s.href}
@@ -698,32 +669,16 @@ function ContactSection({ onSnake }: { onSnake: () => void }) {
             data-cur
           >
             <div
-              style={{
-                width: 64, height: 64, borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: `all 0.3s ${EASE}`,
-              }}
-              onMouseEnter={e => {
-                const d = e.currentTarget as HTMLDivElement;
-                d.style.background = '#fff'; d.style.borderColor = '#fff';
-                (d.querySelector('span') as HTMLElement).style.color = '#080808';
-              }}
-              onMouseLeave={e => {
-                const d = e.currentTarget as HTMLDivElement;
-                d.style.background = 'transparent'; d.style.borderColor = 'rgba(255,255,255,0.1)';
-                (d.querySelector('span') as HTMLElement).style.color = 'rgba(255,255,255,0.5)';
-              }}
+              style={{ width: 64, height: 64, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: `all 0.3s ${EASE}` }}
+              onMouseEnter={e => { const d = e.currentTarget as HTMLDivElement; d.style.background = '#fff'; d.style.borderColor = '#fff'; (d.querySelector('span') as HTMLElement).style.color = '#080808'; }}
+              onMouseLeave={e => { const d = e.currentTarget as HTMLDivElement; d.style.background = 'transparent'; d.style.borderColor = 'rgba(255,255,255,0.1)'; (d.querySelector('span') as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; }}
             >
-              <span style={{ ...monoTag(s.label, 'rgba(255,255,255,0.5)'), fontSize: 11, transition: `color 0.3s ${EASE}` }}>
-                {s.label}
-              </span>
+              <span style={{ ...monoTag(s.label, 'rgba(255,255,255,0.5)'), fontSize: 11, transition: `color 0.3s ${EASE}` }}>{s.label}</span>
             </div>
           </a>
         ))}
       </div>
 
-      {/* Footer line */}
       <div style={{
         position: 'absolute', bottom: 'clamp(1.5rem,3vw,3rem)',
         display: 'flex', gap: 24, alignItems: 'center',
@@ -732,12 +687,11 @@ function ContactSection({ onSnake }: { onSnake: () => void }) {
         {['© 2026 SIDDHANT SINGH', 'PM · BUILDER · BENGALURU'].map((t, i) => (
           <span key={i} style={{ color: 'rgba(255,255,255,0.18)' }}>{t}</span>
         ))}
-        <a href="/resume.pdf" target="_blank" style={{ color: 'rgba(255,255,255,0.18)', textDecoration: 'none', transition: `color 0.2s` }}
+        <a href="/resume.pdf" target="_blank"
+          style={{ color: 'rgba(255,255,255,0.18)', textDecoration: 'none', transition: `color 0.2s` }}
           onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
           onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.18)')}
-          data-cur>
-          RESUME ↗
-        </a>
+          data-cur>RESUME ↗</a>
         <button
           onClick={onSnake}
           style={{ background: 'none', border: 'none', cursor: 'none', color: 'rgba(255,255,255,0.18)', fontFamily: mono, fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', transition: `color 0.2s` }}
@@ -786,20 +740,17 @@ function SnakeGame({ open, onClose }: { open: boolean; onClose: () => void }) {
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, GCOLS * CELL, GROWS * CELL);
 
-    // Subtle grid dots
     ctx.fillStyle = 'rgba(255,255,255,0.04)';
     for (let x = 0; x < GCOLS; x++)
       for (let y = 0; y < GROWS; y++)
         ctx.fillRect(x * CELL + CELL / 2 - 1, y * CELL + CELL / 2 - 1, 2, 2);
 
-    // Food — glowing white square
     ctx.shadowColor = '#fff';
     ctx.shadowBlur  = 12;
     ctx.fillStyle   = '#fff';
     ctx.fillRect(food.current.x * CELL + 5, food.current.y * CELL + 5, CELL - 10, CELL - 10);
     ctx.shadowBlur  = 0;
 
-    // Snake — orange head, fading tail
     const len = snake.current.length;
     snake.current.forEach((seg, i) => {
       const alpha = i === 0 ? 1 : 0.35 + (0.65 * (len - i) / len);
@@ -826,7 +777,6 @@ function SnakeGame({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (!open) return;
     reset();
 
-    // Capture phase so we intercept before section nav
     const onKey = (e: KeyboardEvent) => {
       const map: Record<string, Dir> = {
         ArrowUp: 'U', w: 'U', W: 'U',
@@ -882,7 +832,7 @@ function SnakeGame({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 300,
+      position: 'fixed', inset: 0, zIndex: 9000,
       background: 'rgba(0,0,0,0.88)',
       backdropFilter: 'blur(24px)',
       display: 'flex', flexDirection: 'column',
@@ -891,11 +841,7 @@ function SnakeGame({ open, onClose }: { open: boolean; onClose: () => void }) {
       pointerEvents: open ? 'auto' : 'none',
       transition: `opacity 0.4s ${EASE}`,
     }}>
-      {/* Top bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        width: GCOLS * CELL, marginBottom: 14,
-      }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: GCOLS * CELL, marginBottom: 14 }}>
         <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.45em', color: ORANGE, textTransform: 'uppercase' }}>
           {String(score).padStart(3, '0')}
         </span>
@@ -913,36 +859,24 @@ function SnakeGame({ open, onClose }: { open: boolean; onClose: () => void }) {
         </div>
       </div>
 
-      {/* Canvas */}
       <div style={{ position: 'relative' }}>
-        <canvas
-          ref={canvasRef}
-          width={GCOLS * CELL}
-          height={GROWS * CELL}
-          style={{ display: 'block', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10 }}
-        />
+        <canvas ref={canvasRef} width={GCOLS * CELL} height={GROWS * CELL}
+          style={{ display: 'block', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10 }} />
         {isDead && (
           <div style={{
             position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             background: 'rgba(8,8,8,0.85)', borderRadius: 10,
           }}>
-            <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 56, color: ORANGE, letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>
-              GAME OVER
-            </p>
+            <p style={{ fontFamily: cab, fontWeight: 900, fontSize: 56, color: ORANGE, letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>GAME OVER</p>
             <p style={{ fontFamily: mono, fontSize: 11, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.45em', margin: '12px 0 0', textTransform: 'uppercase' }}>
               SCORE — {String(score).padStart(3, '0')}
             </p>
-            <button
-              onClick={reset}
-              style={{
-                marginTop: 28, fontFamily: mono, fontSize: 10, letterSpacing: '0.5em',
-                textTransform: 'uppercase', color: '#080808', background: ORANGE,
-                border: 'none', cursor: 'none', padding: '10px 28px', borderRadius: 6,
-              }}
-              data-cur
-            >PLAY AGAIN</button>
+            <button onClick={reset} style={{
+              marginTop: 28, fontFamily: mono, fontSize: 10, letterSpacing: '0.5em',
+              textTransform: 'uppercase', color: '#080808', background: ORANGE,
+              border: 'none', cursor: 'none', padding: '10px 28px', borderRadius: 6,
+            }} data-cur>PLAY AGAIN</button>
           </div>
         )}
       </div>
@@ -954,22 +888,17 @@ function SnakeGame({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
-// ── Movie card ────────────────────────────────────────────────────────────────
+// ── Movie card (floating pill) ────────────────────────────────────────────────
 
 function MovieCard() {
   const [hov, setHov] = useState(false);
   const [vis, setVis] = useState(true);
-
   if (!vis) return null;
   return (
-    <div style={{
-      position: 'fixed', bottom: 'clamp(1.5rem,3vw,3rem)', right: 'clamp(1.5rem,3vw,3rem)',
-      zIndex: 150,
-    }}>
+    <div style={{ position: 'relative' }}>
       <a
         href="https://media.sidmatrix.xyz/web/"
-        target="_blank"
-        rel="noopener noreferrer"
+        target="_blank" rel="noopener noreferrer"
         style={{ textDecoration: 'none' }}
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
@@ -978,15 +907,12 @@ function MovieCard() {
         <div style={{
           background: hov ? 'rgba(255,77,0,0.1)' : 'rgba(255,255,255,0.04)',
           border: `1px solid ${hov ? ORANGE : 'rgba(255,255,255,0.08)'}`,
-          borderRadius: '1rem',
-          backdropFilter: 'blur(20px)',
-          padding: '12px 18px',
-          display: 'flex', alignItems: 'center', gap: 12,
+          borderRadius: '1rem', backdropFilter: 'blur(20px)',
+          padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12,
           transition: `all 0.3s ${EASE}`,
           transform: hov ? 'translateY(-3px)' : 'none',
           boxShadow: hov ? `0 16px 40px rgba(255,77,0,0.12)` : 'none',
         }}>
-          {/* Icon */}
           <div style={{
             width: 34, height: 34, borderRadius: '50%',
             background: hov ? ORANGE : 'rgba(255,255,255,0.07)',
@@ -1008,16 +934,12 @@ function MovieCard() {
             <p style={{
               fontFamily: mono, fontSize: 9,
               color: hov ? ORANGE : 'rgba(255,255,255,0.25)',
-              margin: '3px 0 0', letterSpacing: '0.3em',
-              textTransform: 'uppercase',
+              margin: '3px 0 0', letterSpacing: '0.3em', textTransform: 'uppercase',
               transition: `color 0.3s ${EASE}`,
-            }}>
-              JELLYFIN · SIDMATRIX ↗
-            </p>
+            }}>JELLYFIN · SIDMATRIX ↗</p>
           </div>
         </div>
       </a>
-      {/* Dismiss */}
       <button
         onClick={() => setVis(false)}
         style={{
@@ -1025,14 +947,56 @@ function MovieCard() {
           width: 20, height: 20, borderRadius: '50%',
           background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 12, lineHeight: 1,
-          transition: 'all 0.2s',
+          cursor: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 12, lineHeight: 1, transition: 'all 0.2s',
         }}
         onMouseEnter={e => { e.currentTarget.style.background = '#333'; e.currentTarget.style.color = '#fff'; }}
         onMouseLeave={e => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
         data-cur
       >×</button>
     </div>
+  );
+}
+
+// ── Snake card (floating pill) ────────────────────────────────────────────────
+
+function SnakeCard({ onOpen }: { onOpen: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onClick={onOpen}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{ background: 'none', border: 'none', padding: 0, cursor: 'none', display: 'block', width: '100%' }}
+      data-cur
+    >
+      <div style={{
+        background: hov ? 'rgba(255,77,0,0.1)' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${hov ? ORANGE : 'rgba(255,255,255,0.08)'}`,
+        borderRadius: '1rem', backdropFilter: 'blur(20px)',
+        padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12,
+        transition: `all 0.3s ${EASE}`,
+        transform: hov ? 'translateY(-3px)' : 'none',
+        boxShadow: hov ? `0 16px 40px rgba(255,77,0,0.12)` : 'none',
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: '50%',
+          background: hov ? ORANGE : 'rgba(255,255,255,0.07)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: `background 0.3s ${EASE}`, flexShrink: 0, fontSize: 16,
+        }}>🐍</div>
+        <div style={{ textAlign: 'left' }}>
+          <p style={{ fontFamily: sat, fontWeight: 700, fontSize: 13, color: '#fff', margin: 0, lineHeight: 1.3 }}>
+            Bored? Play Snake
+          </p>
+          <p style={{
+            fontFamily: mono, fontSize: 9,
+            color: hov ? ORANGE : 'rgba(255,255,255,0.25)',
+            margin: '3px 0 0', letterSpacing: '0.3em', textTransform: 'uppercase',
+            transition: `color 0.3s ${EASE}`,
+          }}>MINI GAME · WASD / ARROWS</p>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -1047,7 +1011,6 @@ export default function App() {
   const [snakeOpen, setSnake]   = useState(false);
   const lastScroll = useRef(0);
 
-  // Scroll to navigate (blocked when menu or snake is open)
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       if (menuOpen || snakeOpen) return;
@@ -1061,10 +1024,9 @@ export default function App() {
     return () => window.removeEventListener('wheel', onWheel);
   }, [menuOpen, snakeOpen]);
 
-  // Keyboard — G opens snake; arrows navigate sections
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (snakeOpen) return;           // snake handles its own keys via capture
+      if (snakeOpen) return;
       if (e.key === 'g' || e.key === 'G') { setSnake(true); return; }
       if (menuOpen) return;
       if (e.key === 'ArrowDown'  || e.key === 'ArrowRight') setSection(p => Math.min(p + 1, TOTAL - 1));
@@ -1102,24 +1064,34 @@ export default function App() {
       {/* Sections */}
       <div style={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
         {SECTIONS.map((s, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute', inset: 0,
-              opacity: section === i ? 1 : 0,
-              transform: section === i ? 'scale(1)' : section > i ? 'scale(0.94)' : 'scale(1.03)',
-              transition: `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`,
-              pointerEvents: section === i ? 'auto' : 'none',
-              overflowY: (i === 2 || i === 1) ? 'auto' : 'hidden',
-            }}
-          >
+          <div key={i} style={{
+            position: 'absolute', inset: 0,
+            opacity: section === i ? 1 : 0,
+            transform: section === i ? 'scale(1)' : section > i ? 'scale(0.94)' : 'scale(1.03)',
+            transition: `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`,
+            pointerEvents: section === i ? 'auto' : 'none',
+            overflowY: (i === 2 || i === 1) ? 'auto' : 'hidden',
+          }}>
             {s}
           </div>
         ))}
       </div>
 
       {loaded && <SectionProgress cur={section} total={TOTAL} />}
-      {loaded && <MovieCard />}
+
+      {/* Floating cards — bottom right, stacked */}
+      {loaded && (
+        <div style={{
+          position: 'fixed',
+          bottom: 'clamp(1.5rem,3vw,3rem)',
+          right: 'clamp(1.5rem,3vw,3rem)',
+          display: 'flex', flexDirection: 'column', gap: 10,
+          zIndex: 150,
+        }}>
+          <MovieCard />
+          <SnakeCard onOpen={() => setSnake(true)} />
+        </div>
+      )}
     </div>
   );
 }
