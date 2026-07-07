@@ -504,7 +504,7 @@ function AboutSection() {
           <img
             src="/avatar.jpg"
             alt="Siddhant Singh"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 15%', display: 'block' }}
           />
           {/* Bottom gradient */}
           <div style={{
