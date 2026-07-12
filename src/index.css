@@ -2,16 +2,14 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body, #root {
-  width: 100%; height: 100%;
-  overflow: hidden;
-}
+html { scroll-behavior: smooth; }
 
 body {
   background: #080808;
   color: #fff;
   font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
   cursor: none;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -52,6 +50,26 @@ body {
   0%, 100% { transform: scale(1);   opacity: 0.6; }
   50%       { transform: scale(1.5); opacity: 0.8; }
 }
+@keyframes cue-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
+/* ── Layout grids ──────────────────────────────────────── */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4vw;
+  align-items: center;
+}
+
+.prow {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 4vw;
+  align-items: center;
+}
+.prow.rev .pvis { order: 2; }
 
 /* ── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 3px; }
@@ -62,9 +80,12 @@ body {
 
 @media (max-width: 768px) {
   body { cursor: auto; }
+  .about-grid, .prow { grid-template-columns: 1fr; }
+  .prow.rev .pvis { order: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
