@@ -77,7 +77,7 @@ export function Contact({ onSnake }: { onSnake: () => void }) {
         {['© 2026 SIDDHANT SINGH', 'PM · BUILDER · BENGALURU'].map((t, i) => (
           <span key={i} style={{ color: 'rgba(255,255,255,0.18)' }}>{t}</span>
         ))}
-        <a href="/resume.pdf" target="_blank"
+        <a href="/resume.pdf" target="_blank" rel="noopener noreferrer"
           style={{ color: 'rgba(255,255,255,0.18)', textDecoration: 'none', transition: `color 0.2s` }}
           onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
           onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.18)')}
