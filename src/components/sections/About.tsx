@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { ORANGE, EASE, cab, sat, monoTag, STATS, type Stat } from '../../data';
+import { ORANGE, EASE, cab, sat, monoTag, STATS, AWARDS, type Stat } from '../../data';
 import { useReveal } from '../../hooks/useReveal';
 
 function CountUpStat({ stat, start }: { stat: Stat; start: boolean }) {
@@ -72,11 +72,31 @@ export function About() {
             color: 'rgba(255,255,255,0.42)', marginTop: 28, marginBottom: 48,
             ...fade(0.2),
           }}>
-            3.5 years resolving 1,000+ enterprise S1/S2 production incidents at Dell — product failure from the customer's side, under pressure, in real time. Then I built the tools that should've existed: a RAG chatbot, a Windows display manager, a 19-container homelab, and PM teardowns. NextLeap PM Fellowship formalised the product thinking.
+            3.5 years resolving 1,000+ enterprise S1/S2 production incidents at Dell — product failure from the customer's side, under pressure, in real time. Then I built the tools that should've existed: an AI assistant for the PowerScale consoles, the review platform my L2 team runs on, a RAG chatbot, a Windows display manager, a 19-container homelab, and PM teardowns. NextLeap PM Fellowship formalised the product thinking.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, ...fade(0.3) }}>
             {STATS.map(s => <CountUpStat key={s.label} stat={s} start={visible} />)}
+          </div>
+
+          <div style={{ marginTop: 48, ...fade(0.4) }}>
+            <p style={{ ...monoTag('// RECOGNITION', ORANGE), marginBottom: 18 }}>{'// RECOGNITION'}</p>
+            {AWARDS.map(a => (
+              <div key={a.title + a.date} style={{
+                display: 'flex', gap: 18, alignItems: 'baseline',
+                borderTop: '1px solid rgba(255,255,255,0.07)', padding: '14px 0',
+              }}>
+                <span style={{ ...monoTag(a.date, 'rgba(255,255,255,0.3)'), minWidth: 96, flexShrink: 0 }}>{a.date}</span>
+                <div>
+                  <p style={{ fontFamily: cab, fontWeight: 800, fontSize: 18, color: '#fff', letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
+                    {a.title}
+                  </p>
+                  <p style={{ fontFamily: sat, fontSize: 14, lineHeight: 1.55, color: 'rgba(255,255,255,0.42)', margin: '4px 0 0' }}>
+                    {a.note}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
