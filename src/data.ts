@@ -96,6 +96,8 @@ export const PROJECTS: Project[] = [
     result: "RICE priorities, an MVP cut, a North Star metric (Workflows Confidently Started), three-tier pricing, GTM and a risk register. Delivered a deck, wireframes, an 18-page handoff doc and a Lovable prototype.",
     metric: { value: '17', label: 'screens audited first-hand' },
     tags: ['PM', 'User Research', 'RICE', 'Lovable'],
+    href: 'https://flowmind-creator-92.lovable.app/', linkLabel: 'TRY THE PROTOTYPE ↗',
+    extra: { href: '/FlowMind_Deck.pdf', label: 'READ THE DECK ↗' },
     accent: '#C084FC', bg: 'linear-gradient(135deg,#0f0618 0%,#07030c 100%)',
   },
   {
