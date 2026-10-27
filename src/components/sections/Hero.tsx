@@ -5,7 +5,7 @@ function MaskLine({ text, delay, active, outline }: {
   text: string; delay: number; active: boolean; outline?: boolean;
 }) {
   return (
-    <span style={{ display: 'block', overflow: 'hidden' }}>
+    <span style={{ display: 'block', overflow: 'hidden', paddingLeft: '0.08em', marginLeft: '-0.08em' }}>
       <span style={{
         display: 'block', fontFamily: cab, fontWeight: 900,
         fontSize: 'clamp(3.5rem,14vw,180px)', lineHeight: 0.95, letterSpacing: '-0.04em',
@@ -70,26 +70,37 @@ export function Hero({ active, onNext }: { active: boolean; onNext: () => void }
       paddingTop: 'calc(clamp(1.5rem,3vw,3rem) + 72px)',
     }}>
       <div style={{
-        ...monoTag('// PM · BUILDER · BENGALURU, INDIA', ORANGE),
+        ...monoTag('// SIDDHANT SINGH · BENGALURU, INDIA', ORANGE),
         marginBottom: 40,
         opacity: active ? 1 : 0,
         transition: `opacity 0.7s 0.15s ${EASE}`,
       }}>
-        {'// PM · BUILDER · BENGALURU, INDIA'}
+        {'// SIDDHANT SINGH · BENGALURU, INDIA'}
       </div>
 
       <h1 style={{ margin: 0 }}>
-        <MaskLine text="PRODUCT"  delay={0.25} active={active} />
-        <MaskLine text="MANAGER." delay={0.4}  active={active} outline />
+        <MaskLine text="TSE II"   delay={0.25} active={active} />
+        <MaskLine text="AT DELL." delay={0.4}  active={active} outline />
+        <span style={{ display: 'block', overflow: 'hidden', marginTop: 36 }}>
+          <span style={{
+            display: 'block', fontFamily: cab, fontWeight: 800,
+            fontSize: 'clamp(1.5rem,3.4vw,44px)', lineHeight: 1.1, letterSpacing: '-0.02em',
+            color: '#fff',
+            transform: active ? 'none' : 'translateY(110%)',
+            transition: `transform 0.9s 0.55s ${EASE}`,
+          }}>
+            Building AI tools for enterprise support.
+          </span>
+        </span>
       </h1>
 
       <p style={{
         fontFamily: sat, fontSize: '1.2rem', color: 'rgba(255,255,255,0.38)',
-        marginTop: 48, maxWidth: '28rem', lineHeight: 1.7,
+        marginTop: 28, maxWidth: '30rem', lineHeight: 1.7,
         opacity: active ? 1 : 0, transform: active ? 'none' : 'translateY(20px)',
-        transition: `opacity 0.7s 0.65s ${EASE}, transform 0.7s 0.65s ${EASE}`,
+        transition: `opacity 0.7s 0.7s ${EASE}, transform 0.7s 0.7s ${EASE}`,
       }}>
-        Builds products that turn enterprise chaos into clarity. 1,000+ incidents resolved. 4 tools shipped. Real infrastructure, real research.
+        4 years in enterprise storage support at Dell. 1,000+ incidents resolved. 4 tools shipped. Real infrastructure, real research.
       </p>
 
       <div style={{

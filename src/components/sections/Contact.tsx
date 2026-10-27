@@ -74,7 +74,7 @@ export function Contact({ onSnake }: { onSnake: () => void }) {
         display: 'flex', gap: 24, alignItems: 'center',
         ...monoTag('', 'rgba(255,255,255,0.18)'), fontSize: 10, letterSpacing: '0.3em',
       }}>
-        {['© 2026 SIDDHANT SINGH', 'PM · BUILDER · BENGALURU'].map((t, i) => (
+        {['© 2026 SIDDHANT SINGH', 'TSE II · DELL · BENGALURU'].map((t, i) => (
           <span key={i} style={{ color: 'rgba(255,255,255,0.18)' }}>{t}</span>
         ))}
         <a href="/resume.pdf" target="_blank" rel="noopener noreferrer"

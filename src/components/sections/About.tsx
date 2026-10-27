@@ -72,7 +72,7 @@ export function About() {
             color: 'rgba(255,255,255,0.42)', marginTop: 28, marginBottom: 48,
             ...fade(0.2),
           }}>
-            3.5 years resolving 1,000+ enterprise S1/S2 production incidents at Dell — product failure from the customer's side, under pressure, in real time. Then I built the tools that should've existed: an AI assistant for the PowerScale consoles, the review platform my L2 team runs on, a RAG chatbot, a Windows display manager, a 19-container homelab, and PM teardowns. NextLeap PM Fellowship formalised the product thinking.
+            4 years resolving 1,000+ enterprise S1/S2 production incidents at Dell — product failure from the customer's side, under pressure, in real time. Then I built the tools that should've existed: an AI assistant for the PowerScale consoles, the review platform my L2 team runs on, a RAG chatbot, a Windows display manager, a self-hosted homelab, and PM teardowns. The NextLeap PM Fellowship, capped by the FlowMind capstone, formalised the product thinking.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, ...fade(0.3) }}>

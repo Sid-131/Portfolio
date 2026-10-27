@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ORANGE, EASE, cab, sat, mono, monoTag, PROJECTS, type Project } from '../../data';
 import { useReveal } from '../../hooks/useReveal';
 
@@ -8,6 +8,43 @@ function CaseLine({ label, text }: { label: string; text: string }) {
       <p style={{ ...monoTag(label, 'rgba(255,255,255,0.28)'), marginBottom: 4 }}>{label}</p>
       <p style={{ fontFamily: sat, fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{text}</p>
     </div>
+  );
+}
+
+const external = (href: string) => href.startsWith('http');
+
+function Panel({ href, onMouseEnter, onMouseLeave, children }: {
+  href?: string; onMouseEnter: () => void; onMouseLeave: () => void; children: ReactNode;
+}) {
+  const common = { className: 'pvis', onMouseEnter, onMouseLeave };
+  if (!href) return <div {...common} style={{ display: 'block' }}>{children}</div>;
+  return (
+    <a
+      {...common}
+      href={href}
+      target={external(href) ? '_blank' : undefined}
+      rel="noopener noreferrer"
+      style={{ textDecoration: 'none', display: 'block' }}
+      data-cur
+    >
+      {children}
+    </a>
+  );
+}
+
+function StoryLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target={external(href) ? '_blank' : undefined}
+      rel="noopener noreferrer"
+      style={{ ...monoTag(label, 'rgba(255,255,255,0.55)'), fontSize: 11, textDecoration: 'none', transition: `color 0.2s ${EASE}` }}
+      onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
+      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+      data-cur
+    >
+      {label}
+    </a>
   );
 }
 
@@ -28,15 +65,10 @@ function ProjectRow({ p, i }: { p: Project; i: number }) {
       }}
     >
       {/* Visual panel */}
-      <a
-        className="pvis"
+      <Panel
         href={p.href}
-        target={p.href.startsWith('http') ? '_blank' : undefined}
-        rel="noopener noreferrer"
-        style={{ textDecoration: 'none', display: 'block' }}
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
-        data-cur
       >
         <div style={{
           aspectRatio: '4/3', borderRadius: '1.5rem',
@@ -71,7 +103,7 @@ function ProjectRow({ p, i }: { p: Project; i: number }) {
             pointerEvents: 'none',
           }} />
         </div>
-      </a>
+      </Panel>
 
       {/* Story column */}
       <div className="pstory">
@@ -107,17 +139,12 @@ function ProjectRow({ p, i }: { p: Project; i: number }) {
           ))}
         </div>
 
-        <a
-          href={p.href}
-          target={p.href.startsWith('http') ? '_blank' : undefined}
-          rel="noopener noreferrer"
-          style={{ ...monoTag(p.linkLabel, 'rgba(255,255,255,0.55)'), fontSize: 11, textDecoration: 'none', transition: `color 0.2s ${EASE}` }}
-          onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
-          data-cur
-        >
-          {p.linkLabel}
-        </a>
+        {(p.href || p.extra) && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 28px' }}>
+            {p.href && p.linkLabel && <StoryLink href={p.href} label={p.linkLabel} />}
+            {p.extra && <StoryLink href={p.extra.href} label={p.extra.label} />}
+          </div>
+        )}
       </div>
     </div>
   );

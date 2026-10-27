@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The 41% decision · L2 Review Platform case study · Siddhant Singh</title>
+  <meta name="description" content="A case-routing classifier agreed with human reviewers on 41% of 185 cases. Why it shipped as a triage aid instead of a router, and how that shaped a platform a 12-person L2 team runs every week." />
+  <link rel="canonical" href="https://sidmatrix.xyz/l2-case-study/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Siddhant Singh" />
+  <meta property="og:url" content="https://sidmatrix.xyz/l2-case-study/" />
+  <meta property="og:title" content="The 41% decision · L2 Review Platform case study" />
+  <meta property="og:description" content="A routing classifier agreed with human reviewers 41% of the time. Why it shipped as a triage aid, not a router, and what that made possible." />
+  <meta property="og:image" content="https://sidmatrix.xyz/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#080808" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: #0f0f0f;
+      --line: rgba(255,255,255,0.08);
+      --ink: #ffffff;
+      --ink-2: rgba(255,255,255,0.72);
+      --ink-3: rgba(255,255,255,0.48);
+      --accent: #FF4D00;
+      --cab: 'Cabinet Grotesk', ui-sans-serif, sans-serif;
+      --sat: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: var(--sat); font-size: 17px; line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+    @media (min-width: 720px) { .wrap { padding: 0 32px; } }
+
+    .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink-3); }
+    .tag.accent { color: var(--accent); }
+
+    header.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 28px 0; }
+    header.top .logo { font-family: var(--cab); font-weight: 900; font-size: 22px; letter-spacing: -0.04em; text-decoration: none; color: var(--ink); }
+    header.top a.tag { text-decoration: none; }
+    header.top a.tag:hover { color: var(--accent); }
+
+    .hero { padding: 48px 0 40px; border-bottom: 1px solid var(--line); }
+    h1 {
+      font-family: var(--cab); font-weight: 900; letter-spacing: -0.04em; line-height: 0.92;
+      font-size: clamp(3rem, 13vw, 112px); margin: 20px 0 28px;
+    }
+    h1 .outline { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.8); font-style: italic; }
+    .dek { font-size: clamp(1.1rem, 2.4vw, 1.3rem); line-height: 1.6; color: var(--ink-2); max-width: 36rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 28px; }
+
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin: 40px 0 8px; }
+    @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+    .stat { background: var(--bg); padding: 20px 18px; }
+    .stat b { display: block; font-family: var(--cab); font-weight: 900; font-size: clamp(2rem, 6vw, 44px); letter-spacing: -0.04em; line-height: 1; }
+    .stat b.accent { color: var(--accent); }
+    .stat span { display: block; margin-top: 8px; font-size: 14px; line-height: 1.45; color: var(--ink-3); }
+
+    section { padding: 48px 0 8px; }
+    h2 { font-family: var(--cab); font-weight: 800; font-size: clamp(1.7rem, 4.5vw, 2.4rem); letter-spacing: -0.03em; line-height: 1.05; margin: 12px 0 18px; }
+    p + p { margin-top: 14px; }
+    p { color: var(--ink-2); }
+    p strong, li strong { color: var(--ink); font-weight: 700; }
+
+    /* chart */
+    figure.chart { margin: 28px 0 8px; padding: 22px 18px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+    figure.chart figcaption { margin-bottom: 18px; }
+    figure.chart figcaption .title { display: block; font-weight: 700; color: var(--ink); font-size: 15px; line-height: 1.4; }
+    figure.chart figcaption .sub { display: block; color: var(--ink-3); font-size: 13px; margin-top: 2px; }
+    .bars { list-style: none; position: relative; }
+    .bar-row { display: grid; grid-template-columns: 88px 1fr 76px; align-items: center; gap: 10px; padding: 6px 0; border-radius: 6px; transition: opacity 0.2s; }
+    @media (min-width: 560px) { .bar-row { grid-template-columns: 120px 1fr 92px; } }
+    .bars:hover .bar-row:not(:hover) { opacity: 0.45; }
+    .bar-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; opacity: 1; }
+    .bar-row .name { font-size: 14px; color: var(--ink-2); line-height: 1.2; }
+    .bar-row .track { position: relative; height: 16px; }
+    .bar-row .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 3px; }
+    .bar-row .val { font-family: var(--mono); font-size: 12px; color: var(--ink-2); text-align: right; white-space: nowrap; }
+    .bar-row .val em { font-style: normal; color: var(--ink-3); }
+    .refline { position: absolute; top: 20px; bottom: 0; border-left: 1px dashed rgba(255,255,255,0.55); pointer-events: none; }
+    .refwrap { position: absolute; inset: 0; display: grid; grid-template-columns: 88px 1fr 76px; gap: 10px; pointer-events: none; }
+    @media (min-width: 560px) { .refwrap { grid-template-columns: 120px 1fr 92px; } }
+    .refwrap > div { position: relative; }
+    .reflabel { position: absolute; top: 0; transform: translateX(-50%); font-family: var(--mono); font-size: 11px; color: var(--ink-2); white-space: nowrap; }
+    .axis { display: grid; grid-template-columns: 88px 1fr 76px; gap: 10px; margin-top: 6px; }
+    @media (min-width: 560px) { .axis { grid-template-columns: 120px 1fr 92px; } }
+    .axis .ticks { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 6px; }
+
+    /* options */
+    .options { display: grid; gap: 12px; margin-top: 22px; }
+    .opt { border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; background: var(--surface); }
+    .opt.chosen { border-color: var(--accent); background: rgba(255,77,0,0.06); }
+    .opt h3 { font-family: var(--sat); font-weight: 700; font-size: 17px; color: var(--ink); line-height: 1.35; margin-bottom: 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+    .opt .verdict { font-family: var(--mono); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-3); }
+    .opt.chosen .verdict { color: var(--accent); }
+    .opt p { font-size: 16px; }
+
+    ul.points { list-style: none; margin-top: 16px; display: grid; gap: 14px; }
+    ul.points li { padding-left: 22px; position: relative; color: var(--ink-2); }
+    ul.points li::before { content: ''; position: absolute; left: 0; top: 0.72em; width: 10px; height: 2px; background: var(--accent); }
+
+    blockquote { margin: 40px 0 0; padding: 26px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-family: var(--cab); font-weight: 800; font-size: clamp(1.4rem, 3.6vw, 1.9rem); line-height: 1.2; letter-spacing: -0.02em; }
+
+    footer { padding: 48px 0 64px; display: flex; flex-wrap: wrap; gap: 14px 28px; justify-content: space-between; align-items: center; }
+    footer .links { display: flex; flex-wrap: wrap; gap: 14px 24px; }
+    footer a.tag { text-decoration: none; }
+    footer a.tag:hover { color: var(--accent); }
+    .fine { font-size: 14px; color: var(--ink-3); margin-top: 28px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="logo" href="/" aria-label="Siddhant Singh, home">SS.</a>
+      <a class="tag" href="/">← Portfolio</a>
+    </header>
+
+    <div class="hero">
+      <p class="tag accent">// Case study · L2 Review Platform · 2026</p>
+      <h1>THE 41% <span class="outline">DECISION.</span></h1>
+      <p class="dek">The classifier I built to route support cases agreed with human reviewers on 41% of them. It shipped anyway, as a triage aid instead of a router. This is why, and what that choice made possible.</p>
+      <div class="meta">
+        <span class="tag">Role · built it end to end</span>
+        <span class="tag">Users · 12 L2 reviewers</span>
+        <span class="tag">Scale · ~300 cases a week</span>
+      </div>
+
+      <div class="stats" role="list">
+        <div class="stat" role="listitem"><b class="accent">41%</b><span>agreement with human labels (76 of 185 cases)</span></div>
+        <div class="stat" role="listitem"><b>25%</b><span>of cases had no usable text (47 of 185)</span></div>
+        <div class="stat" role="listitem"><b>55%</b><span>agreement on cases that did have text</span></div>
+        <div class="stat" role="listitem"><b>7→3</b><span>days, case time-to-resolve after launch</span></div>
+      </div>
+    </div>
+
+    <section>
+      <p class="tag accent">01 · The job</p>
+      <h2>A weekly review that lived in a spreadsheet.</h2>
+      <p>Every week, senior (L2) engineers review the open cases of front-line support engineers. Each case gets a verdict: no action needed, behaviour, customer delay or knowledge gap. Anything other than “no action needed” requires a written comment.</p>
+      <p>That review ran on a shared spreadsheet. Someone split the weekly export by hand. Long-running cases got re-reviewed every single week. Nobody could tell who wrote which verdict, and a manager’s 1:1 prep was a pivot table.</p>
+    </section>
+
+    <section>
+      <p class="tag accent">02 · The plan</p>
+      <h2>Route by keyword, then assign.</h2>
+      <p>Match keywords in each case summary to one of seven skill queues, then hand the case to a reviewer in that queue. If routing worked, the hand split would disappear.</p>
+    </section>
+
+    <section>
+      <p class="tag accent">03 · The test</p>
+      <h2>Before it decided anything, I measured it.</h2>
+      <p>I ran the router against <strong>185 cases reviewers had already sorted by hand</strong>. It put 76 of them in the same queue a human did: <strong>41%</strong>.</p>
+
+      <figure class="chart">
+        <figcaption>
+          <span class="title">Agreement with human labels, by queue</span>
+          <span class="sub">Cases where the router picked the reviewer’s queue · dashed line is the overall 41%</span>
+        </figcaption>
+        <div style="position:relative; padding-top:20px;">
+          <div class="refwrap" aria-hidden="true"><span></span><div><span class="refline" style="left:41%"></span><span class="reflabel" style="left:41%">41% overall</span></div><span></span></div>
+          <ul class="bars">
+            <li class="bar-row" tabindex="0" title="Hardware: 13 of 21 cases matched (62%)"><span class="name">Hardware</span><span class="track"><span class="fill" style="width:61.9%"></span></span><span class="val">62% <em>13/21</em></span></li>
+            <li class="bar-row" tabindex="0" title="Networking: 15 of 26 cases matched (58%)"><span class="name">Networking</span><span class="track"><span class="fill" style="width:57.7%"></span></span><span class="val">58% <em>15/26</em></span></li>
+            <li class="bar-row" tabindex="0" title="Windows / SMB: 5 of 10 cases matched (50%)"><span class="name">Windows / SMB</span><span class="track"><span class="fill" style="width:50%"></span></span><span class="val">50% <em>5/10</em></span></li>
+            <li class="bar-row" tabindex="0" title="Admin: 30 of 63 cases matched (48%)"><span class="name">Admin</span><span class="track"><span class="fill" style="width:47.6%"></span></span><span class="val">48% <em>30/63</em></span></li>
+            <li class="bar-row" tabindex="0" title="Unix / NFS: 3 of 12 cases matched (25%)"><span class="name">Unix / NFS</span><span class="track"><span class="fill" style="width:25%"></span></span><span class="val">25% <em>3/12</em></span></li>
+            <li class="bar-row" tabindex="0" title="File system: 9 of 40 cases matched (23%)"><span class="name">File system</span><span class="track"><span class="fill" style="width:22.5%"></span></span><span class="val">23% <em>9/40</em></span></li>
+            <li class="bar-row" tabindex="0" title="Backup: 1 of 13 cases matched (8%)"><span class="name">Backup</span><span class="track"><span class="fill" style="width:7.7%"></span></span><span class="val">8% <em>1/13</em></span></li>
+          </ul>
+        </div>
+        <div class="axis" aria-hidden="true"><span></span><div class="ticks"><span>0%</span><span>50%</span><span>100%</span></div><span></span></div>
+      </figure>
+
+      <p>Most of the gap had one cause. <strong>A quarter of the cases (47 of 185) had no usable text</strong>: the summary field held a generic placeholder like “Product Problem” or a pasted terminal log. No keyword list can route words that aren’t there. On cases that did have text, agreement rose to 55%, with a long tail by queue: Hardware and Networking did best, File system and Backup worst.</p>
+    </section>
+
+    <section>
+      <p class="tag accent">04 · The decision</p>
+      <h2>Three ways to go.</h2>
+      <div class="options">
+        <div class="opt">
+          <h3>Make it the router of record <span class="verdict">Rejected</span></h3>
+          <p>Fastest to ship, and wrong roughly six times in ten, silently. A misrouted case looks exactly like a correct one, and reviewers stop trusting a queue that is quietly wrong.</p>
+        </div>
+        <div class="opt">
+          <h3>Keep tuning keywords <span class="verdict">Rejected</span></h3>
+          <p>No amount of tuning fixes the quarter of cases with no text, and every tweak fits last month’s wording. The route to better accuracy isn’t more keywords.</p>
+        </div>
+        <div class="opt chosen">
+          <h3>Ship it as a triage aid <span class="verdict">Chosen</span></h3>
+          <p>The router suggests a queue with its score and the words it matched. A manager confirms or fixes it on a Triage page before assignment, and every fix is stored next to the original guess. Even at 41%, a pre-sort that shows its reasons saves reading time, and the corrections are exactly the labelled data a trained model needs. 185 labels across seven queues, some with barely a dozen examples, was too few to train on; 500 to 1,000 reviewed rows is the target.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="tag accent">05 · What it changed in the build</p>
+      <h2>Designed around being wrong.</h2>
+      <ul class="points">
+        <li><strong>Guess and answer live in separate columns.</strong> A correction never overwrites the router’s suggestion, so every fix becomes a training row, and a trained model can later run side by side with the keyword rules and be measured against them.</li>
+        <li><strong>The classifier sits behind a small interface.</strong> Replacing it touches nothing else.</li>
+        <li><strong>Workload is controlled by carry-over rules, not routing.</strong> A case open for six weeks shows up in six exports, but it comes back for review only if its severity or status changed, it crossed an age band (7, 14, 30, 60 days), or nobody has looked at it in 4 weeks.</li>
+        <li><strong>Assignment is continuity-first.</strong> The reviewer who saw a case last time gets it again; otherwise it goes to the least-loaded reviewer in that queue, under a weekly cap per person.</li>
+        <li><strong>Reviews are append-only, with real accounts.</strong> A verdict about a named engineer has to be traceable to whoever wrote it. The comment rule for non-trivial verdicts is enforced by the API, not just the form.</li>
+      </ul>
+    </section>
+
+    <section>
+      <p class="tag accent">06 · Outcome</p>
+      <h2>In use every week.</h2>
+      <p>A 12-person L2 team runs its weekly review on the platform, about 300 cases a week. Case time-to-resolve dropped from <strong>7 days to 3</strong> as reviewers help engineers validate and pin down problems earlier. Managers prep 1:1s from a per-engineer report with week-by-week trends and every reviewer comment, instead of a pivot table. And every routing correction is now labelled data.</p>
+      <p><strong>Next:</strong> train a classifier once corrections reach 500 to 1,000 rows and measure it side by side with the keyword rules, and rework the Backup keywords against real examples.</p>
+
+      <blockquote>The 41% wasn’t a number to hide. It showed which cases the router could never handle, so the product sends those to a person on purpose.</blockquote>
+
+      <p class="fine">The public repository runs the same application on fictional demo data; all names, customers and case numbers in it are made up.</p>
+    </section>
+
+    <footer>
+      <div class="links">
+        <a class="tag accent" href="/">← sidmatrix.xyz</a>
+        <a class="tag" href="https://github.com/Sid-131/L2-Platform" target="_blank" rel="noopener noreferrer">Code ↗</a>
+        <a class="tag" href="/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
+      </div>
+      <span class="tag">© 2026 Siddhant Singh</span>
+    </footer>
+  </div>
+</body>
+</html>
