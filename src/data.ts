@@ -35,7 +35,7 @@ export const PROJECTS: Project[] = [
     result: "Tested by 40+ engineers at ~75% exact-answer accuracy. Now feeding into Dell's product team: invited to demo it to engineering and write the requirements.",
     metric: { value: '<20s', label: 'per lookup · was ~30 min' },
     tags: ['RAG', 'Ollama', 'ChromaDB', 'Flask'],
-    href: 'https://github.com/Sid-131/Assistant-Project-Dell', linkLabel: 'VIEW PROJECT ↗',
+    href: 'https://github.com/Sid-131/Admin-Assistant', linkLabel: 'VIEW PROJECT ↗',
     accent: '#0A84FF', bg: 'linear-gradient(135deg,#000a18 0%,#00040a 100%)',
   },
   {
@@ -45,7 +45,7 @@ export const PROJECTS: Project[] = [
     result: "Used weekly by a 12-person L2 team across ~300 cases. Case time-to-resolve dropped from 7 days to 3.",
     metric: { value: '7→3', label: 'days to resolve' },
     tags: ['Python', 'Flask', 'SQLAlchemy', 'Docker'],
-    href: 'https://l2-platform-dell.vercel.app', linkLabel: 'TRY THE DEMO ↗',
+    href: 'https://github.com/Sid-131/L2-Platform', linkLabel: 'VIEW PROJECT ↗',
     accent: '#22D3EE', bg: 'linear-gradient(135deg,#00121a 0%,#00080c 100%)',
   },
   {
