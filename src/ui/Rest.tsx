@@ -385,7 +385,7 @@ export function Person() {
         <div className="person">
           <div className="person__bio">
             <Reveal className="photo" scale={0.85} y={0}>
-              <img src="/avatar.jpg" alt="Siddhant Singh" loading="lazy"
+              <img src="/siddhant-portrait.webp" alt="Siddhant Singh, as a 3D cartoon" loading="lazy" width={640} height={640}
                 onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
             </Reveal>
             <Reveal as="p" delay={0.1}>

@@ -1,5 +1,5 @@
 import {
-  createContext, useContext, useEffect, useRef, useState,
+  createContext, useContext, useEffect, useRef, useState, useCallback,
   type ReactNode, type ElementType, type CSSProperties,
 } from 'react';
 import {
@@ -84,39 +84,60 @@ export function MotionRoot({ on, children }: { on: boolean; children: ReactNode 
 
 export function Curtain({ onLift, onDone }: { onLift: () => void; onDone: () => void }) {
   const [lift, setLift] = useState(false);
-  const name = 'Siddhant Singh';
-  useEffect(() => {
-    const t1 = window.setTimeout(() => setLift(true), 1500);
-    const t2 = window.setTimeout(onLift, 1750);
-    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
+  const name = 'Siddhant.';
+  const lifted = useRef(false);
+  const go = useCallback(() => {
+    if (lifted.current) return;
+    lifted.current = true;
+    setLift(true);
+    window.setTimeout(onLift, 250);
   }, [onLift]);
+
+  useEffect(() => {
+    const t = window.setTimeout(go, 2700);
+    const onKey = (e: KeyboardEvent) => { if (['Escape', 'Enter', ' '].includes(e.key)) go(); };
+    window.addEventListener('keydown', onKey);
+    return () => { window.clearTimeout(t); window.removeEventListener('keydown', onKey); };
+  }, [go]);
+
   return (
-    <motion.div className="curtain" aria-hidden="true"
+    <motion.div className="curtain" aria-hidden="true" onClick={go}
       initial={{ y: 0 }} animate={lift ? { y: '-105%' } : { y: 0 }}
       transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
       onAnimationComplete={() => { if (lift) onDone(); }}>
-      <div className="curtain__in">
-        <motion.p className="curtain__label" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
-          Support engineer turned product builder
-        </motion.p>
-        <p className="curtain__name">
-          {[...name].map((ch, i) => (
-            <span className="curtain__ch" key={i}>
-              <motion.span initial={{ y: '110%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.9, delay: 0.1 + i * 0.035, ease: EASE }}>
-                {ch === ' ' ? '\u00a0' : ch}
-              </motion.span>
-            </span>
-          ))}
-        </p>
-        <motion.p className="curtain__sub" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7, ease: EASE }}>
-          Ticket. Pattern. Tool.
-        </motion.p>
-      </div>
+      <motion.p className="curtain__label" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
+        Welcome to the work of
+      </motion.p>
+      <p className="curtain__name">
+        {[...name].map((ch, i) => (
+          <span className="curtain__ch" key={i}>
+            <motion.span initial={{ y: '110%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.9, delay: 0.1 + i * 0.045, ease: EASE }}>
+              {ch}
+            </motion.span>
+          </span>
+        ))}
+      </p>
+      <motion.div className="curtain__me"
+        initial={{ y: '35%', opacity: 0, scale: 0.96 }} animate={{ y: 0, opacity: 1, scale: 1 }}
+        transition={{ duration: 1.1, delay: 0.25, ease: EASE }}>
+        <motion.img src="/siddhant-wave.webp" alt="" width={573} height={1400} decoding="async"
+          animate={{ rotate: [0, -2.5, 2, -1.5, 0] }}
+          transition={{ duration: 1.3, delay: 1.1, ease: 'easeInOut' }} />
+      </motion.div>
+      <motion.div className="curtain__note"
+        initial={{ opacity: 0, y: 16, rotate: 0 }} animate={{ opacity: 1, y: 0, rotate: -5 }}
+        transition={{ delay: 1.05, type: 'spring', stiffness: 260, damping: 18 }}>
+        <span>Hi, I’m Siddhant.</span>
+        <b>Ticket. Pattern. Tool.</b>
+      </motion.div>
       <motion.svg className="curtain__spark" viewBox="0 0 40 40" aria-hidden="true"
         initial={{ rotate: 0, scale: 0 }} animate={{ rotate: 180, scale: 1 }} transition={{ duration: 1.6, ease: EASE }}>
         <path d="M20 0c1.5 11 7.5 17 20 20-12.5 3-18.5 9-20 20-1.5-11-7.5-17-20-20 12.5-3 18.5-9 20-20Z" fill="currentColor" />
       </motion.svg>
+      <motion.p className="curtain__skip" initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} transition={{ delay: 1.2 }}>
+        Tap to skip
+      </motion.p>
     </motion.div>
   );
 }
