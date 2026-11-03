@@ -136,7 +136,7 @@ function FeatureCard({ f, flip }: { f: Feature; flip?: boolean }) {
     <Reveal as="article" y={80} amount={0.15} className={`feature${flip ? ' feature--flip' : ''}`}>
       <div className="feature__visual" ref={ref as never}>
         <span className="feature__demo">Demo data</span>
-        <m.div style={{ y }}>
+        <m.div style={{ y }} className="feature__float">
           {f.id === 'assistant' ? <AssistantMock /> : <QueueMock />}
         </m.div>
       </div>

@@ -544,7 +544,7 @@ a.ev:hover { border-color: var(--line-2); }
 .track {
   display: grid; grid-auto-flow: column; grid-auto-columns: min(86%, 340px);
   gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
-  margin: 0 calc(var(--gutter) * -1); padding: 4px var(--gutter) 10px;
+  margin: -12px calc(var(--gutter) * -1) 0; padding: 16px var(--gutter) 10px;
   scroll-padding: 0 var(--gutter);
 }
 .track::-webkit-scrollbar { display: none; }
@@ -701,17 +701,19 @@ html.lenis, html.lenis body { height: auto; }
 .w__in { display: inline-block; transform-origin: 0 100%; will-change: transform; }
 .display em .w { padding-right: 0.12em; margin-right: -0.12em; }
 
-/* Intro curtain */
+/* Intro: a chapter wipe that lifts away */
 .curtain {
   position: fixed; inset: 0; z-index: 300;
-  background: var(--text); color: var(--bg);
+  background: var(--accent); color: #140a05;
   display: grid; place-items: center;
 }
-.curtain__in { overflow: hidden; text-align: center; }
-.curtain__name { font-family: var(--f-display); font-weight: 900; font-size: clamp(2.6rem, 9vw, 7rem); letter-spacing: -0.045em; line-height: 1; }
-.curtain__sub { font-family: var(--f-serif); font-style: italic; font-size: clamp(1.1rem, 2.4vw, 1.6rem); opacity: 0.6; margin-top: 10px; }
-.curtain__n { position: absolute; right: var(--gutter); bottom: 28px; font-family: var(--f-mono); font-size: 14px; }
-.curtain__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--accent); transform-origin: left; }
+.curtain__in { text-align: center; padding: 0 var(--gutter); }
+.curtain__label { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.04em; opacity: 0.75; }
+.curtain__name { font-family: var(--f-display); font-weight: 900; font-size: clamp(2.8rem, 10vw, 8rem); letter-spacing: -0.045em; line-height: 1; margin-top: 14px; }
+.curtain__ch { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+.curtain__ch > span { display: inline-block; }
+.curtain__sub { font-family: var(--f-serif); font-style: italic; font-size: clamp(1.2rem, 2.6vw, 1.8rem); margin-top: 8px; }
+.curtain__spark { position: absolute; width: 34px; right: calc(var(--gutter) + 8px); bottom: 32px; }
 
 /* Nav extras */
 .nav { will-change: transform; }
@@ -765,3 +767,68 @@ html[data-motion='off'] .card__art svg * { stroke-dasharray: none; stroke-dashof
 html[data-motion='off'] .contact__orb { animation: none; }
 .mail__a { background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat; transition: background-size 0.5s var(--ease), color 0.2s; }
 .mail__a:hover { background-size: 100% 2px; }
+
+/* ── Ambient motion and hover detail ───────────────────────── */
+.loop-stage { position: relative; }
+.orbits { position: absolute; inset: -14% -10%; pointer-events: none; z-index: 0; }
+.orbit { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--line-2); stroke-width: 1; overflow: visible; }
+.orbit circle:not([stroke-dasharray]) { fill: var(--accent); stroke: none; }
+.orbit--a { animation: orbit 45s linear infinite; }
+.orbit--b { animation: orbit 62s linear infinite reverse; }
+.orbit--c { animation: orbit 90s linear infinite; opacity: 0.7; }
+@keyframes orbit { to { rotate: 360deg; } }
+.loop-stage .loop-wrap { position: relative; z-index: 1; }
+.spark { position: absolute; z-index: 2; display: block; color: var(--accent); pointer-events: none; }
+.spark svg { animation: spin 26s linear infinite; }
+.spark--a { width: 22px; height: 22px; top: -18px; right: 8%; }
+.spark--b { width: 14px; height: 14px; bottom: 6%; left: -22px; color: var(--ok); }
+.spark--c { width: 10px; height: 10px; top: 30%; right: -14px; color: var(--text-2); }
+.spark--b svg { animation-duration: 18s; animation-direction: reverse; }
+@keyframes spin { to { rotate: 360deg; } }
+@media (max-width: 979px) { .orbits { inset: -8% -4%; } .spark--b { left: 4px; } .spark--c { right: 2px; } }
+
+/* Mockups float gently, and tilt toward you on hover */
+.feature__float .mock { animation: float 7s ease-in-out infinite; transition: transform 0.6s var(--ease), box-shadow 0.6s var(--ease); }
+.feature--flip .feature__float .mock { animation-delay: -3.5s; }
+@keyframes float { 0%, 100% { translate: 0 0; rotate: 0.6deg; } 50% { translate: 0 -8px; rotate: -0.4deg; } }
+.feature { transition: border-color 0.4s var(--ease); }
+.feature:hover { border-color: var(--line-2); }
+.feature:hover .mock { transform: perspective(1000px) rotateY(-3deg) rotateX(2deg) translateY(-6px); box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9); }
+.feature--flip:hover .mock { transform: perspective(1000px) rotateY(3deg) rotateX(2deg) translateY(-6px); }
+.gate__verdict { animation: breathe 3.2s ease-in-out infinite; }
+@keyframes breathe { 50% { text-shadow: 0 0 22px color-mix(in srgb, var(--ok) 70%, transparent); } }
+
+/* Buttons lift and their arrows turn */
+.btn { translate: 0 0; transition: translate 0.3s var(--ease), transform 0.35s var(--ease), background-color 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease); }
+.btn:hover { translate: 0 -3px; }
+.btn .ext svg, .ev b span svg { transition: rotate 0.35s var(--ease); }
+.btn:hover .ext svg, .ev:hover b span svg { rotate: 45deg; }
+.ev { transition: border-color 0.25s var(--ease), translate 0.35s var(--ease); }
+a.ev:hover { translate: 0 -4px; border-color: var(--accent); }
+
+/* Playground cards */
+.card { transition: border-color 0.3s var(--ease); }
+.card:hover { border-color: var(--accent); }
+.card__art svg { transition: transform 0.5s var(--ease); }
+.card:hover .card__art svg { transform: rotate(-7deg) scale(1.1); }
+.pg__progress { margin-top: 18px; height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.pg__progress span { display: block; height: 100%; background: var(--accent); transform-origin: 0 50%; }
+
+/* Photo breathes, with a light sheen passing over it */
+.photo { position: relative; }
+.photo img { animation: photo-breathe 11s ease-in-out infinite; }
+.photo::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%) 150% 0 / 250% 100% no-repeat;
+  animation: sheen 12s ease-in-out infinite;
+}
+@keyframes photo-breathe { 50% { transform: scale(1.04) translateY(-3px); } }
+@keyframes sheen { 0%, 60%, 100% { background-position: 150% 0; } 86% { background-position: -80% 0; } }
+
+/* Status dot and nav: small live touches */
+.brand__mark { transition: rotate 0.5s var(--ease); }
+.brand:hover .brand__mark { rotate: -8deg; }
+
+/* Pause switches every loop off */
+html[data-motion='off'] :is(.orbit, .spark svg, .feature__float .mock, .gate__verdict, .photo img, .photo::after) { animation: none; }
+html[data-motion='off'] .feature:hover .mock { transform: none; }

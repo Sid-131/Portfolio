@@ -201,6 +201,11 @@ export function Hero({ ready }: { ready: boolean }) {
   const sy = useSpring(gy, { stiffness: 60, damping: 20 });
   const glow = useTransform([sx, sy], ([x, y]) =>
     `radial-gradient(600px circle at ${x}% ${y}%, var(--accent-soft), transparent 60%)`);
+  // Parallax layers around the hero card: each drifts against the pointer at its own depth.
+  const nearX = useTransform(sx, v => (v - 50) * -0.5);
+  const nearY = useTransform(sy, v => (v - 50) * -0.4);
+  const farX = useTransform(sx, v => (v - 50) * 0.25);
+  const farY = useTransform(sy, v => (v - 50) * 0.2);
 
   const follow = (e: RPointer<HTMLElement>) => {
     if (!on || e.pointerType !== 'mouse') return;
@@ -246,7 +251,19 @@ export function Hero({ ready }: { ready: boolean }) {
             ))}
           </div>
         </div>
-        <LoopCard ready={ready} />
+        <div className="loop-stage">
+          <m.div className="orbits" style={{ x: farX, y: farY }} aria-hidden="true"
+            initial={on ? { opacity: 0, scale: 0.85 } : false} animate={ready ? { opacity: 1, scale: 1 } : undefined}
+            transition={{ duration: 1.6, delay: 0.4, ease: EASE }}>
+            <svg className="orbit orbit--a" viewBox="0 0 400 400"><ellipse cx="200" cy="200" rx="196" ry="120" /></svg>
+            <svg className="orbit orbit--b" viewBox="0 0 400 400"><ellipse cx="200" cy="200" rx="150" ry="190" /><circle cx="200" cy="10" r="5" /></svg>
+            <svg className="orbit orbit--c" viewBox="0 0 400 400"><circle cx="200" cy="200" r="186" strokeDasharray="2 10" /></svg>
+          </m.div>
+          <m.span className="spark spark--a" style={{ x: nearX, y: nearY }} aria-hidden="true"><Spark /></m.span>
+          <m.span className="spark spark--b" style={{ x: farX, y: farY }} aria-hidden="true"><Spark /></m.span>
+          <m.span className="spark spark--c" style={{ x: nearX, y: farY }} aria-hidden="true"><Spark /></m.span>
+          <LoopCard ready={ready} />
+        </div>
       </div>
 
       <m.div className="across" {...rise(1.25)}>
@@ -262,5 +279,13 @@ export function Hero({ ready }: { ready: boolean }) {
         </VelocityMarquee>
       </m.div>
     </section>
+  );
+}
+
+function Spark() {
+  return (
+    <svg viewBox="0 0 40 40" width="100%" height="100%">
+      <path d="M20 0c1.5 11 7.5 17 20 20-12.5 3-18.5 9-20 20-1.5-11-7.5-17-20-20 12.5-3 18.5-9 20-20Z" fill="currentColor" />
+    </svg>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as RPointer, type ReactNode } from 'react';
-import { motion as m, AnimatePresence, useInView, useScroll, useTransform, useSpring, type MotionValue } from 'framer-motion';
+import { motion as m, AnimatePresence, useInView, useScroll, useTransform, useSpring, useMotionValue, type MotionValue } from 'framer-motion';
 import {
   RECOGNITION, SKILLS, PLAYGROUND, JOURNEY, DEFAULTS, OFF_CLOCK, LINKS,
   type PlayKind, type PlayItem,
@@ -226,11 +226,14 @@ export function Playground({ onPlay }: { onPlay: () => void }) {
   const track = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
   const items = useMemo(() => PLAYGROUND.filter(p => filter === 'All' || p.kind === filter), [filter]);
+  const progress = useMotionValue(0);
+  const bar = useSpring(progress, { stiffness: 200, damping: 30 });
 
   useEffect(() => {
     setPos(0);
+    progress.set(0);
     track.current?.scrollTo({ left: 0 });
-  }, [filter]);
+  }, [filter, progress]);
 
   const step = () => {
     const card = track.current?.querySelector<HTMLElement>('.card');
@@ -238,7 +241,10 @@ export function Playground({ onPlay }: { onPlay: () => void }) {
   };
   const onScroll = () => {
     const el = track.current;
-    if (el) setPos(Math.min(items.length - 1, Math.round(el.scrollLeft / step())));
+    if (!el) return;
+    setPos(Math.min(items.length - 1, Math.round(el.scrollLeft / step())));
+    const max = el.scrollWidth - el.clientWidth;
+    progress.set(max > 0 ? el.scrollLeft / max : 1);
   };
   const go = (d: number) => {
     track.current?.scrollBy({ left: d * step(), behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' });
@@ -308,6 +314,7 @@ export function Playground({ onPlay }: { onPlay: () => void }) {
             {items.map((p, n) => <PlayCard key={`${filter}-${p.id}`} p={p} n={n} onPlay={onPlay} />)}
           </AnimatePresence>
         </div>
+        <div className="pg__progress" aria-hidden="true"><m.span style={{ scaleX: bar }} /></div>
       </div>
     </section>
   );

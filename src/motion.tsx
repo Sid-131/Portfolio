@@ -83,29 +83,40 @@ export function MotionRoot({ on, children }: { on: boolean; children: ReactNode 
 /* ── Intro curtain ─────────────────────────────────────────── */
 
 export function Curtain({ onLift, onDone }: { onLift: () => void; onDone: () => void }) {
-  const [n, setN] = useState(0);
   const [lift, setLift] = useState(false);
+  const name = 'Siddhant Singh';
   useEffect(() => {
-    const c = animate(0, 100, {
-      duration: 1.1, ease: [0.65, 0, 0.35, 1],
-      onUpdate: v => setN(Math.round(v)),
-      onComplete: () => { setLift(true); window.setTimeout(onLift, 380); },
-    });
-    return () => c.stop();
+    const t1 = window.setTimeout(() => setLift(true), 1500);
+    const t2 = window.setTimeout(onLift, 1750);
+    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
   }, [onLift]);
   return (
     <motion.div className="curtain" aria-hidden="true"
-      initial={{ y: 0 }} animate={lift ? { y: '-100%' } : { y: 0 }}
-      transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+      initial={{ y: 0 }} animate={lift ? { y: '-105%' } : { y: 0 }}
+      transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
       onAnimationComplete={() => { if (lift) onDone(); }}>
       <div className="curtain__in">
-        <motion.p className="curtain__name" initial={{ y: '110%' }} animate={{ y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
-          Siddhant Singh
+        <motion.p className="curtain__label" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
+          Support engineer turned product builder
         </motion.p>
-        <p className="curtain__sub">Ticket. Pattern. Tool.</p>
+        <p className="curtain__name">
+          {[...name].map((ch, i) => (
+            <span className="curtain__ch" key={i}>
+              <motion.span initial={{ y: '110%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.9, delay: 0.1 + i * 0.035, ease: EASE }}>
+                {ch === ' ' ? '\u00a0' : ch}
+              </motion.span>
+            </span>
+          ))}
+        </p>
+        <motion.p className="curtain__sub" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7, ease: EASE }}>
+          Ticket. Pattern. Tool.
+        </motion.p>
       </div>
-      <span className="curtain__n">{String(n).padStart(3, '0')}</span>
-      <span className="curtain__bar" style={{ transform: `scaleX(${n / 100})` }} />
+      <motion.svg className="curtain__spark" viewBox="0 0 40 40" aria-hidden="true"
+        initial={{ rotate: 0, scale: 0 }} animate={{ rotate: 180, scale: 1 }} transition={{ duration: 1.6, ease: EASE }}>
+        <path d="M20 0c1.5 11 7.5 17 20 20-12.5 3-18.5 9-20 20-1.5-11-7.5-17-20-20 12.5-3 18.5-9 20-20Z" fill="currentColor" />
+      </motion.svg>
     </motion.div>
   );
 }
