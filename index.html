@@ -8,7 +8,7 @@
     <meta name="description" content="Siddhant Singh, Technical Support Engineer II at Dell, building AI tools for enterprise support: a RAG assistant, an L2 review platform and a failover precheck." />
     <meta name="author" content="Siddhant Singh" />
     <link rel="canonical" href="https://sidmatrix.xyz/" />
-    <meta name="theme-color" content="#080808" />
+    <meta name="theme-color" content="#0d0f11" />
 
     <meta property="og:type" content="profile" />
     <meta property="og:site_name" content="Siddhant Singh" />
@@ -42,23 +42,28 @@
     </script>
 
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800&f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+
+    <script>
+      /* Apply the saved theme before paint to avoid a flash. */
+      try { if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}
+    </script>
 
     <style>
       /* Static summary for crawlers, link previews and no-JS visitors.
          React replaces it on mount; it only becomes visible if the app hasn't loaded after ~1.5s. */
-      #sf { max-width: 720px; margin: 0 auto; padding: 72px 16px; color: #fff; background: #080808;
+      #sf { max-width: 720px; margin: 0 auto; padding: 72px 16px; color: #eef0f2; background: #0d0f11;
             font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; line-height: 1.65; cursor: auto;
             animation: sf-in 0.4s 1.5s both; }
       @keyframes sf-in { from { opacity: 0; } to { opacity: 1; } }
       #sf h1 { font-family: 'Cabinet Grotesk', ui-sans-serif, sans-serif; font-weight: 900; font-size: 44px; line-height: 1; letter-spacing: -0.03em; }
       #sf h2 { font-family: 'Cabinet Grotesk', ui-sans-serif, sans-serif; font-weight: 800; font-size: 22px; margin: 36px 0 10px; }
-      #sf p, #sf li { color: rgba(255,255,255,0.7); margin-top: 10px; }
+      #sf p, #sf li { color: #b4bac1; margin-top: 10px; }
       #sf ul { padding-left: 18px; }
-      #sf a { color: #fff; text-decoration-color: #FF4D00; }
+      #sf a { color: #eef0f2; text-decoration-color: #ff5a1f; }
       #sf .lede { font-size: 20px; color: #fff; margin-top: 16px; }
     </style>
   </head>
