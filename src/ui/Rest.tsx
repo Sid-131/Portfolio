@@ -1,33 +1,62 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as RPointer, type ReactNode } from 'react';
+import { motion as m, AnimatePresence, useInView, useScroll, useTransform, useSpring, type MotionValue } from 'framer-motion';
 import {
   RECOGNITION, SKILLS, PLAYGROUND, JOURNEY, DEFAULTS, OFF_CLOCK, LINKS,
   type PlayKind, type PlayItem,
 } from '../content';
 import { Ext, Left, Right, Plus, Glyph } from './Icons';
+import { SplitHeading, Reveal, CountUp, VelocityMarquee, useMotionOn, EASE } from '../motion';
 
 const isExternal = (href: string) => /^https?:/.test(href) || href.endsWith('.pdf');
 const extProps = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noopener' } : {});
 
 /* ── 02 In the real world ─────────────────────────────────────── */
 
+function Gate() {
+  const on = useMotionOn();
+  const ref = useRef<HTMLDivElement>(null);
+  const seen = useInView(ref, { once: true, amount: 0.6 });
+  const go = seen || !on;
+  return (
+    <div ref={ref} className="gate" role="img" aria-label="30 checks passed, verdict: go">
+      <div className="gate__checks">
+        <div className="gate__grid" aria-hidden="true">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <m.i key={i}
+              initial={on ? { opacity: 0.12, scale: 0.6 } : false}
+              animate={go ? { opacity: 0.9, scale: 1 } : undefined}
+              transition={{ delay: 0.15 + i * 0.045, type: 'spring', stiffness: 500, damping: 22 }} />
+          ))}
+        </div>
+        <p className="gate__cap"><CountUp to={30} duration={1.4} delay={0.15} /> / 30 passed. Run on 1,000+ cases, zero failover incidents since.</p>
+      </div>
+      <m.div className="gate__verdict"
+        initial={on ? { opacity: 0, scale: 2.2, rotate: -12 } : false}
+        animate={go ? { opacity: 1, scale: 1, rotate: 0 } : undefined}
+        transition={{ delay: 1.65, type: 'spring', stiffness: 380, damping: 14 }}>
+        GO
+      </m.div>
+    </div>
+  );
+}
+
 export function RealWorld() {
-  const checks = Array.from({ length: 30 });
   return (
     <section className="sec" id="real" aria-labelledby="real-title">
       <div className="wrap">
         <header className="sec-head">
-          <p className="sec-index"><b>02</b> In the real world</p>
-          <h2 id="real-title" className="display">The queue is the research.<em>Four years of it.</em></h2>
+          <Reveal as="p" className="sec-index"><b>02</b> In the real world</Reveal>
+          <SplitHeading id="real-title" main="The queue is the research." em="Four years of it." />
         </header>
 
         <div className="real">
-          <p className="real__lead">
+          <Reveal as="p" className="real__lead">
             At Dell I handle high-severity PowerScale escalations for banking, telecom and media customers: performance,
             failover, protocol and InfiniBand back-end issues. It’s where I learned what an outage costs a customer, and
             which missing tool would have prevented it.
-          </p>
+          </Reveal>
 
-          <article className="panel" aria-labelledby="precheck-title">
+          <Reveal as="article" className="panel" y={60}>
             <p className="panel__kind">Dell, standard protocol</p>
             <h3 id="precheck-title">SyncIQ failover precheck</h3>
             <p>
@@ -35,49 +64,55 @@ export function RealWorld() {
               failback, ending in a single go / no-go call. One check that kept raising false alarms was cut, because a
               gate people learn to ignore protects nobody.
             </p>
-            <div className="gate" role="img" aria-label="30 checks passed, one earlier check removed, verdict: go">
-              <div className="gate__checks">
-                <div className="gate__grid" aria-hidden="true">
-                  {checks.map((_, i) => <i key={i} />)}
-                </div>
-                <p className="gate__cap">30 / 30 passed. Run on 1,000+ cases, zero failover incidents since.</p>
-              </div>
-              <div className="gate__verdict">GO</div>
-            </div>
-          </article>
+            <Gate />
+          </Reveal>
 
-          <div className="panel">
+          <Reveal className="panel" y={60} delay={0.12}>
             <p className="panel__kind">Beyond my own queue</p>
             <ul className="team">
-              <li>Mentor new hires on Admin and FS cases.</li>
-              <li>Formed and led the team’s engagement group.</li>
-              <li>Managed a vendor hardware team through six months of training.</li>
+              {['Mentor new hires on Admin and FS cases.', 'Formed and led the team’s engagement group.', 'Managed a vendor hardware team through six months of training.']
+                .map((t, n) => <Reveal as="li" key={t} delay={0.2 + n * 0.08} y={14}>{t}</Reveal>)}
             </ul>
             <p className="panel__kind" style={{ marginTop: 26, marginBottom: 0 }}>Dell recognition</p>
             <ul className="list">
-              {RECOGNITION.map(r => (
-                <li key={r.title + r.date}>
+              {RECOGNITION.map((r, n) => (
+                <Reveal as="li" key={r.title + r.date} delay={0.3 + n * 0.08} y={14}>
                   <time>{r.date}</time>
                   <span><b>{r.title}</b>{r.note && <> · {r.note}</>}</span>
-                </li>
+                </Reveal>
               ))}
             </ul>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
-/* ── Principle ────────────────────────────────────────────────── */
+/* ── Principle: words light up as you scroll past ───────────── */
+
+function Word({ w, i, n, p }: { w: string; i: number; n: number; p: MotionValue<number> }) {
+  const opacity = useTransform(p, [i / n, (i + 1) / n], [0.14, 1]);
+  return <m.span style={{ opacity }}>{w}{i < n - 1 ? ' ' : ''}</m.span>;
+}
 
 export function Principle() {
+  const on = useMotionOn();
+  const ref = useRef<HTMLQuoteElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] });
+  const words = 'A gate people learn to ignore protects nobody.'.split(' ');
   return (
     <section className="principle" aria-label="A working principle">
       <div className="wrap">
         <figure>
-          <blockquote>A gate people learn to ignore protects nobody.</blockquote>
-          <figcaption>Why one check came out of the SyncIQ precheck: it kept raising false alarms, and engineers stop trusting a noisy gate.</figcaption>
+          <blockquote ref={ref} aria-label={words.join(' ')}>
+            <span aria-hidden="true">
+              {on ? words.map((w, i) => <Word key={i} w={w} i={i} n={words.length} p={scrollYProgress} />) : words.join(' ')}
+            </span>
+          </blockquote>
+          <Reveal as="p" className="figcap" delay={0.1}>
+            Why one check came out of the SyncIQ precheck: it kept raising false alarms, and engineers stop trusting a noisy gate.
+          </Reveal>
         </figure>
       </div>
     </section>
@@ -104,34 +139,45 @@ export function Skills({ onOpenCase }: { onOpenCase: () => void }) {
     <section className="sec" id="skills" aria-labelledby="skills-title">
       <div className="wrap">
         <header className="sec-head">
-          <p className="sec-index"><b>03</b> How I think and work</p>
-          <h2 id="skills-title" className="display">Tools are easy to list.<em>Here’s where I used them.</em></h2>
-          <p className="lede">Pick a capability to see the work behind it.</p>
+          <Reveal as="p" className="sec-index"><b>03</b> How I think and work</Reveal>
+          <SplitHeading id="skills-title" main="Tools are easy to list." em="Here’s where I used them." />
+          <Reveal as="p" className="lede" delay={0.3}>Pick a capability to see the work behind it.</Reveal>
         </header>
 
-        <div className="tabs" role="tablist" aria-label="Capabilities">
-          {SKILLS.map((s, i) => (
-            <button key={s.id} ref={el => { tabs.current[i] = el; }}
-              role="tab" id={`tab-${s.id}`} aria-controls={`panel-${s.id}`}
-              aria-selected={sel === s.id} tabIndex={sel === s.id ? 0 : -1}
-              className="tab" onClick={() => setSel(s.id)} onKeyDown={e => onKey(e, i)}>
-              {s.label}
-            </button>
-          ))}
-        </div>
+        <Reveal className="tabs" y={20}>
+          <div role="tablist" aria-label="Capabilities" className="tabs__in">
+            {SKILLS.map((s, i) => (
+              <button key={s.id} ref={el => { tabs.current[i] = el; }}
+                role="tab" id={`tab-${s.id}`} aria-controls={`panel-${s.id}`}
+                aria-selected={sel === s.id} tabIndex={sel === s.id ? 0 : -1}
+                className="tab" onClick={() => setSel(s.id)} onKeyDown={e => onKey(e, i)}>
+                {sel === s.id && <m.span layoutId="tab-pill" className="tab__pill" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}
+                <span className="tab__label">{s.label}</span>
+              </button>
+            ))}
+          </div>
+        </Reveal>
 
         <div className="tabpanel" role="tabpanel" id={`panel-${skill.id}`} aria-labelledby={`tab-${skill.id}`}>
-          <p className="tabpanel__sum">{skill.summary}</p>
-          <div className="evidence">
-            {skill.evidence.map(e => {
-              const inner = (<><b>{e.title}{e.href && <span aria-hidden="true"><Ext /></span>}</b><p>{e.body}</p></>);
-              if (!e.href) return <div className="ev" key={e.title}>{inner}</div>;
-              if (e.href === '#case/assistant') {
-                return <a className="ev" key={e.title} href={e.href} onClick={ev => { ev.preventDefault(); onOpenCase(); }}>{inner}</a>;
-              }
-              return <a className="ev" key={e.title} href={e.href} {...extProps(e.href)}>{inner}</a>;
-            })}
-          </div>
+          <AnimatePresence mode="wait">
+            <m.div key={skill.id} className="tabpanel__grid"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+              <m.p className="tabpanel__sum" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
+                {skill.summary}
+              </m.p>
+              <div className="evidence">
+                {skill.evidence.map((e, n) => {
+                  const inner = (<><b>{e.title}{e.href && <span aria-hidden="true"><Ext /></span>}</b><p>{e.body}</p></>);
+                  const anim = { initial: { opacity: 0, y: 26 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay: 0.08 + n * 0.08, ease: EASE } };
+                  if (!e.href) return <m.div className="ev" key={e.title} {...anim}>{inner}</m.div>;
+                  if (e.href === '#case/assistant') {
+                    return <m.a className="ev" key={e.title} href={e.href} {...anim} onClick={ev => { ev.preventDefault(); onOpenCase(); }}>{inner}</m.a>;
+                  }
+                  return <m.a className="ev" key={e.title} href={e.href} {...extProps(e.href)} {...anim}>{inner}</m.a>;
+                })}
+              </div>
+            </m.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
@@ -142,11 +188,18 @@ export function Skills({ onOpenCase }: { onOpenCase: () => void }) {
 
 const FILTERS: ('All' | PlayKind)[] = ['All', 'Build', 'Research', 'Prototype', 'Game'];
 
-function PlayCard({ p, onPlay }: { p: PlayItem; onPlay: () => void }) {
+function PlayCard({ p, n, onPlay }: { p: PlayItem; n: number; onPlay: () => void }) {
+  const on = useMotionOn();
+  const ref = useRef<HTMLElement>(null);
+  const seen = useInView(ref, { once: true, amount: 0.4 });
   return (
-    <article className="card" aria-labelledby={`pg-${p.id}`}>
+    <m.article ref={ref} className={`card${seen || !on ? ' is-in' : ''}`} aria-labelledby={`pg-${p.id}`}
+      initial={on ? { opacity: 0, y: 50 } : false}
+      animate={seen || !on ? { opacity: 1, y: 0 } : undefined}
+      transition={{ duration: 0.8, delay: Math.min(n, 4) * 0.08, ease: EASE }}
+      whileHover={on ? { y: -8 } : undefined}>
       <div className="card__art"><Glyph name={p.glyph} /></div>
-      <p className="card__kind"><span>{p.kind}</span></p>
+      <p className="card__kind"><span>{p.kind}</span><span className="card__n">{String(n + 1).padStart(2, '0')}</span></p>
       <h3 className="card__title" id={`pg-${p.id}`}>{p.title}</h3>
       <div>
         <p className="card__line">{p.line}</p>
@@ -163,7 +216,7 @@ function PlayCard({ p, onPlay }: { p: PlayItem; onPlay: () => void }) {
               </a>)}
         </div>
       </div>
-    </article>
+    </m.article>
   );
 }
 
@@ -171,6 +224,7 @@ export function Playground({ onPlay }: { onPlay: () => void }) {
   const [filter, setFilter] = useState<'All' | PlayKind>('All');
   const [pos, setPos] = useState(0);
   const track = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
   const items = useMemo(() => PLAYGROUND.filter(p => filter === 'All' || p.kind === filter), [filter]);
 
   useEffect(() => {
@@ -178,83 +232,131 @@ export function Playground({ onPlay }: { onPlay: () => void }) {
     track.current?.scrollTo({ left: 0 });
   }, [filter]);
 
+  const step = () => {
+    const card = track.current?.querySelector<HTMLElement>('.card');
+    return card ? card.offsetWidth + 16 : 300;
+  };
   const onScroll = () => {
     const el = track.current;
-    if (!el) return;
-    const card = el.querySelector<HTMLElement>('.card');
-    if (!card) return;
-    const step = card.offsetWidth + 16;
-    setPos(Math.min(items.length - 1, Math.round(el.scrollLeft / step)));
+    if (el) setPos(Math.min(items.length - 1, Math.round(el.scrollLeft / step())));
+  };
+  const go = (d: number) => {
+    track.current?.scrollBy({ left: d * step(), behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' });
   };
 
-  const go = (d: number) => {
-    const el = track.current;
-    const card = el?.querySelector<HTMLElement>('.card');
-    if (!el || !card) return;
-    el.scrollBy({ left: d * (card.offsetWidth + 16), behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' });
+  // Click-and-drag to scroll with a mouse; touch keeps native swiping.
+  const down = (e: RPointer<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse' || !track.current) return;
+    drag.current = { x: e.clientX, left: track.current.scrollLeft, moved: false };
+  };
+  const moveDrag = (e: RPointer<HTMLDivElement>) => {
+    const d = drag.current, el = track.current;
+    if (!d || !el) return;
+    const dx = e.clientX - d.x;
+    if (Math.abs(dx) > 4 && !d.moved) { d.moved = true; el.classList.add('is-dragging'); }
+    if (d.moved) el.scrollLeft = d.left - dx;
+  };
+  const up = () => {
+    const el = track.current, d = drag.current;
+    drag.current = null;
+    if (!el || !d?.moved) return;
+    el.classList.remove('is-dragging');
+    const target = Math.round(el.scrollLeft / step()) * step();
+    el.scrollTo({ left: target, behavior: 'smooth' });
+    // Swallow the click that ends a drag so cards don't open by accident.
+    const stop = (ev: MouseEvent) => { ev.preventDefault(); ev.stopPropagation(); };
+    el.addEventListener('click', stop, { capture: true, once: true });
+    window.setTimeout(() => el.removeEventListener('click', stop, { capture: true }), 0);
   };
 
   return (
     <section className="sec" id="playground" aria-labelledby="pg-title">
       <div className="wrap">
         <header className="sec-head">
-          <p className="sec-index"><b>04</b> The playground</p>
-          <h2 id="pg-title" className="display">Built to learn.<em>Each one taught me something.</em></h2>
-          <p className="lede">Things I built or took apart to learn by doing. Swipe, or use the arrows.</p>
+          <Reveal as="p" className="sec-index"><b>04</b> The playground</Reveal>
+          <SplitHeading id="pg-title" main="Built to learn." em="Each one taught me something." />
+          <Reveal as="p" className="lede" delay={0.3}>Things I built or took apart to learn by doing. Swipe, drag, or use the arrows.</Reveal>
         </header>
 
-        <div className="pg__bar">
+        <Reveal className="pg__bar" y={20}>
           <div className="filters" role="group" aria-label="Filter projects">
             {FILTERS.map(f => (
               <button key={f} className="filter" aria-pressed={filter === f} onClick={() => setFilter(f)}>
-                {f === 'All' ? `All ${PLAYGROUND.length}` : f === 'Build' ? 'Builds' : f === 'Prototype' ? 'Prototypes' : f}
+                {filter === f && <m.span layoutId="filter-pill" className="filter__pill" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}
+                <span className="filter__label">{f === 'All' ? `All ${PLAYGROUND.length}` : f === 'Build' ? 'Builds' : f === 'Prototype' ? 'Prototypes' : f}</span>
               </button>
             ))}
           </div>
           <div className="pg__nav">
             <button className="iconbtn" onClick={() => go(-1)} disabled={pos === 0} aria-label="Previous project"><Left /></button>
-            <span className="pg__count" aria-live="polite">{String(pos + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}</span>
+            <span className="pg__count" aria-live="polite">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <m.span key={pos} style={{ display: 'inline-block' }}
+                  initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }} transition={{ duration: 0.3 }}>
+                  {String(pos + 1).padStart(2, '0')}
+                </m.span>
+              </AnimatePresence>
+              {' '}/ {String(items.length).padStart(2, '0')}
+            </span>
             <button className="iconbtn" onClick={() => go(1)} disabled={pos >= items.length - 1} aria-label="Next project"><Right /></button>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="track" ref={track} onScroll={onScroll} tabIndex={0} aria-label="Projects">
-          {items.map(p => <PlayCard key={p.id} p={p} onPlay={onPlay} />)}
+        <div className="track" ref={track} onScroll={onScroll} tabIndex={0} aria-label="Projects"
+          onPointerDown={down} onPointerMove={moveDrag} onPointerUp={up} onPointerLeave={up}>
+          <AnimatePresence mode="popLayout">
+            {items.map((p, n) => <PlayCard key={`${filter}-${p.id}`} p={p} n={n} onPlay={onPlay} />)}
+          </AnimatePresence>
         </div>
       </div>
     </section>
   );
 }
 
-/* ── 05 Journey ───────────────────────────────────────────────── */
+/* ── 05 Journey: the line draws as you scroll ─────────────────── */
+
+function Stop({ children, className = '' }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLLIElement>(null);
+  const passed = useInView(ref, { margin: '0px 0px -55% 0px' });
+  return (
+    <m.li ref={ref} className={`${className}${passed ? ' is-lit' : ''}`}
+      initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }}
+      transition={{ duration: 0.8, ease: EASE }}>
+      {children}
+    </m.li>
+  );
+}
 
 export function Journey() {
+  const ref = useRef<HTMLOListElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.75', 'end 0.55'] });
+  const line = useSpring(scrollYProgress, { stiffness: 120, damping: 28 });
   return (
     <section className="sec" id="journey" aria-labelledby="journey-title">
       <div className="wrap">
         <header className="sec-head">
-          <p className="sec-index"><b>05</b> My career, connected</p>
-          <h2 id="journey-title" className="display">Three fields, one habit.<em>Find the failure point.</em></h2>
+          <Reveal as="p" className="sec-index"><b>05</b> My career, connected</Reveal>
+          <SplitHeading id="journey-title" main="Three fields, one habit." em="Find the failure point." />
         </header>
         <div className="journey">
           <div className="journey__intro">
-            <p>Civil engineering taught me failure modes.</p>
-            <p>Support taught me what they cost.</p>
-            <p>Product practice is where I get to prevent them.</p>
+            {['Civil engineering taught me failure modes.', 'Support taught me what they cost.', 'Product practice is where I get to prevent them.']
+              .map((t, n) => <Reveal as="p" key={t} delay={n * 0.12} y={20}>{t}</Reveal>)}
           </div>
-          <ol className="tl">
+          <ol className="tl" ref={ref}>
+            <m.span className="tl__line" style={{ scaleY: line }} aria-hidden="true" />
             {JOURNEY.map(j => (
-              <li key={j.when + j.role}>
+              <Stop key={j.when + j.role}>
                 <time>{j.when}</time>
                 <h3>{j.org} <span>{j.role}</span></h3>
                 <p>{j.note}</p>
-              </li>
+              </Stop>
             ))}
-            <li className="now">
+            <Stop className="now">
               <time>Now</time>
               <h3>Open to product roles <span>Based in Bengaluru</span></h3>
               <p>Product roles where customer signal and the ability to build both count.</p>
-            </li>
+            </Stop>
           </ol>
         </div>
       </div>
@@ -270,35 +372,43 @@ export function Person() {
     <section className="sec" id="person" aria-labelledby="person-title">
       <div className="wrap">
         <header className="sec-head">
-          <p className="sec-index"><b>06</b> The person</p>
-          <h2 id="person-title" className="display">I’ve been on the other end<em>of the escalation.</em></h2>
+          <Reveal as="p" className="sec-index"><b>06</b> The person</Reveal>
+          <SplitHeading id="person-title" main="I’ve been on the other end" em="of the escalation." />
         </header>
         <div className="person">
           <div className="person__bio">
-            <div className="photo">
+            <Reveal className="photo" scale={0.85} y={0}>
               <img src="/avatar.jpg" alt="Siddhant Singh" loading="lazy"
                 onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
-            </div>
-            <p>
+            </Reveal>
+            <Reveal as="p" delay={0.1}>
               I came to software sideways, from a civil engineering degree, and learned it the way support engineers do:
               one broken cluster at a time. The NextLeap Fellowship gave the product instinct a framework.
-            </p>
-            <p>
+            </Reveal>
+            <Reveal as="p" delay={0.18}>
               The homelab that serves this site is where I try things before I pitch them at work. Most of what’s on this
               page started there.
-            </p>
+            </Reveal>
             <div className="offclock">
-              <h3>Off the clock</h3>
-              <ul>{OFF_CLOCK.map(o => <li key={o}>{o}</li>)}</ul>
+              <Reveal as="p" className="offclock__h" delay={0.2}>Off the clock</Reveal>
+              <ul>
+                {OFF_CLOCK.map((o, n) => (
+                  <m.li key={o} initial={{ opacity: 0, scale: 0.6, y: 10 }} whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.8 }} transition={{ delay: 0.25 + n * 0.07, type: 'spring', stiffness: 380, damping: 20 }}
+                    whileHover={{ y: -3 }}>
+                    {o}
+                  </m.li>
+                ))}
+              </ul>
             </div>
           </div>
 
           <div className="acc">
-            <h3 className="acc__title">My default settings</h3>
+            <Reveal as="p" className="acc__title">My default settings</Reveal>
             {DEFAULTS.map((d, i) => {
               const isOpen = open === i;
               return (
-                <div className="acc__item" key={d.h}>
+                <Reveal className="acc__item" key={d.h} delay={0.1 + i * 0.1} y={24}>
                   <button className="acc__btn" aria-expanded={isOpen} aria-controls={`acc-${i}`} id={`accb-${i}`}
                     onClick={() => setOpen(isOpen ? -1 : i)}>
                     {d.h}<span className="acc__ico"><Plus /></span>
@@ -306,7 +416,7 @@ export function Person() {
                   <div className="acc__panel" id={`acc-${i}`} role="region" aria-labelledby={`accb-${i}`} data-open={isOpen}>
                     <div><p>{d.p}</p></div>
                   </div>
-                </div>
+                </Reveal>
               );
             })}
           </div>
@@ -332,37 +442,42 @@ export function Contact() {
 
   return (
     <section className="wrap" id="contact" aria-labelledby="contact-title" style={{ scrollMarginTop: 68 }}>
-      <div className="contact">
-        <h2 id="contact-title" className="display">Open to product roles.<em>Bring the messy problem.</em></h2>
-        <p className="contact__lede">
+      <Reveal className="contact" y={80} scale={0.96} amount={0.25}>
+        <span className="contact__orb" aria-hidden="true" />
+        <SplitHeading id="contact-title" main="Open to product roles." em="Bring the messy problem." delay={0.2} />
+        <Reveal as="p" className="contact__lede" delay={0.4}>
           I bring four years of customer signal, a builder’s habit, and a bias for measuring what shipped. You bring a
           problem worth solving.
-        </p>
-        <div className="mail">
-          <a href={`mailto:${LINKS.email}`}>{LINKS.email}</a>
-          <button className="copy" onClick={copy}>{copied ? 'Copied' : 'Copy email'}</button>
+        </Reveal>
+        <Reveal className="mail" delay={0.5}>
+          <a href={`mailto:${LINKS.email}`} className="mail__a">{LINKS.email}</a>
+          <button className="copy" onClick={copy}>
+            <AnimatePresence mode="wait" initial={false}>
+              <m.span key={copied ? 'y' : 'n'} style={{ display: 'inline-block' }}
+                initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.2 }}>
+                {copied ? 'Copied' : 'Copy email'}
+              </m.span>
+            </AnimatePresence>
+          </button>
           <span className="sr" aria-live="polite">{copied ? 'Email copied' : ''}</span>
-        </div>
-        <div className="contact__links">
-          <a className="btn btn--solid" href={LINKS.linkedin} target="_blank" rel="noopener">Connect on LinkedIn <span className="ext"><Ext /></span></a>
-          <a className="btn" href={LINKS.github} target="_blank" rel="noopener">See the code on GitHub <span className="ext"><Ext /></span></a>
-          <a className="btn" href={LINKS.resume} target="_blank" rel="noopener">Résumé (PDF) <span className="ext"><Ext /></span></a>
-        </div>
-      </div>
+        </Reveal>
+        <Reveal className="contact__links" delay={0.6}>
+          <a className="btn btn--solid" href={LINKS.linkedin} target="_blank" rel="noopener" data-magnetic>Connect on LinkedIn <span className="ext"><Ext /></span></a>
+          <a className="btn" href={LINKS.github} target="_blank" rel="noopener" data-magnetic>See the code on GitHub <span className="ext"><Ext /></span></a>
+          <a className="btn" href={LINKS.resume} target="_blank" rel="noopener" data-magnetic>Résumé (PDF) <span className="ext"><Ext /></span></a>
+        </Reveal>
+      </Reveal>
     </section>
   );
 }
 
 export function Footer() {
   const words = ['Work the ticket', 'Find the pattern', 'Ship the tool', 'Measure it honestly'];
-  const run = (hidden?: boolean) => (
-    <div className="marquee__run" aria-hidden={hidden || undefined}>
-      {words.map(w => <span key={w}>{w}</span>)}
-    </div>
-  );
   return (
     <footer className="foot">
-      <div className="marquee">{run()}{run(true)}</div>
+      <VelocityMarquee base={-2.4} className="foot__marquee">
+        {words.map(w => <span key={w} className="foot__word">{w}<span className="foot__star" aria-hidden="true">✳</span></span>)}
+      </VelocityMarquee>
       <div className="wrap foot__bar">
         <span>© 2026 Siddhant Singh. Self-hosted on a 2019 laptop.</span>
         <span style={{ display: 'flex', gap: 20 }}>
@@ -372,4 +487,3 @@ export function Footer() {
     </footer>
   );
 }
-

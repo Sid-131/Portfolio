@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { Nav, Hero } from './ui/Top';
 import { Signal, Work, CaseDrawer } from './ui/Work';
 import { RealWorld, Principle, Skills, Playground, Journey, Person, Contact, Footer } from './ui/Rest';
 import { Snake } from './ui/Snake';
+import { MotionRoot, Curtain, scrollLock } from './motion';
 
 type Theme = 'dark' | 'light';
 const CASE_HASH = '#case/assistant';
 
-const read = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
-const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } };
+const read = (k: string, store: Storage | null = null) => { try { return (store ?? localStorage).getItem(k); } catch { return null; } };
+const write = (k: string, v: string, store: Storage | null = null) => { try { (store ?? localStorage).setItem(k, v); } catch { /* storage unavailable */ } };
+const session = () => { try { return sessionStorage; } catch { return null; } };
 
 export default function App() {
   const [theme, setTheme] = useState<Theme>(() => (read('theme') === 'light' ? 'light' : 'dark'));
@@ -17,9 +20,12 @@ export default function App() {
     if (saved) return saved === 'on';
     return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
+  // The intro curtain plays once per visit, and never when motion is paused or a deep link is opened.
+  const ready0 = () => !motion || window.location.hash === CASE_HASH || read('intro', session()) === 'seen';
+  const [ready, setReady] = useState<boolean>(ready0);
+  const [curtain, setCurtain] = useState(() => !ready0());
   const [caseOpen, setCaseOpen] = useState(() => window.location.hash === CASE_HASH);
   const [snake, setSnake] = useState(false);
-  const scrollY = useRef(0);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -30,7 +36,12 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dataset.motion = motion ? 'on' : 'off';
     write('motion', motion ? 'on' : 'off');
+    if (!motion) setReady(true);
   }, [motion]);
+
+  // Content starts revealing as the curtain lifts, not after it has gone.
+  const introLift = useCallback(() => { write('intro', 'seen', session()); setReady(true); }, []);
+  const introDone = useCallback(() => setCurtain(false), []);
 
   // The deep dive has its own URL, so it can be linked and survives a refresh.
   useEffect(() => {
@@ -40,7 +51,6 @@ export default function App() {
   }, []);
 
   const openCase = useCallback(() => {
-    scrollY.current = window.scrollY;
     if (window.location.hash !== CASE_HASH) window.history.pushState(null, '', CASE_HASH);
     setCaseOpen(true);
   }, []);
@@ -48,7 +58,6 @@ export default function App() {
   const closeCase = useCallback(() => {
     window.history.replaceState(null, '', window.location.pathname);
     setCaseOpen(false);
-    window.scrollTo({ top: scrollY.current });
   }, []);
 
   // Intercept in-page links to the deep dive.
@@ -74,19 +83,22 @@ export default function App() {
   }, [snake, caseOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = caseOpen || snake ? 'hidden' : '';
-  }, [caseOpen, snake]);
+    const locked = caseOpen || snake || !ready;
+    document.body.style.overflow = locked ? 'hidden' : '';
+    scrollLock(locked);
+  }, [caseOpen, snake, ready]);
 
   const closeSnake = useCallback(() => setSnake(false), []);
 
   return (
-    <>
+    <MotionRoot on={motion}>
       <a className="skip" href="#main">Skip to content</a>
       <span id="top" />
+      {curtain && motion && <Curtain onLift={introLift} onDone={introDone} />}
       <Nav theme={theme} onTheme={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
-        motion={motion} onMotion={() => setMotion(m => !m)} />
+        motion={motion} onMotion={() => setMotion(v => !v)} ready={ready} />
       <main id="main">
-        <Hero motion={motion} />
+        <Hero ready={ready} />
         <Signal />
         <Work />
         <RealWorld />
@@ -98,8 +110,8 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
-      {caseOpen && <CaseDrawer onClose={closeCase} />}
+      <AnimatePresence>{caseOpen && <CaseDrawer key="case" onClose={closeCase} />}</AnimatePresence>
       {snake && <Snake onClose={closeSnake} />}
-    </>
+    </MotionRoot>
   );
 }
